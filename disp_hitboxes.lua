@@ -23,13 +23,16 @@ local reversePairs = function ( aTable )
 end
 
 re.on_draw_ui(function()
-    changed, display_hitboxes = imgui.checkbox("Display Hitboxes", display_hitboxes)
-    changed, display_hurtboxes = imgui.checkbox("Display Hurtboxes", display_hurtboxes)
-    changed, display_pushboxes = imgui.checkbox("Display Pushboxes", display_pushboxes)
-    changed, display_throwboxes = imgui.checkbox("Display Throw Boxes", display_throwboxes)
-    changed, display_throwhurtboxes = imgui.checkbox("Display Throw Hurtboxes", display_throwhurtboxes)
-    changed, display_proximityboxes = imgui.checkbox("Display Proximity Boxes", display_proximityboxes)
-    changed, hide_p2 = imgui.checkbox("Hide P2 Boxes", hide_p2)
+    if imgui.tree_node("Hitbox Viewer") then
+        changed, display_hitboxes = imgui.checkbox("Display Hitboxes", display_hitboxes)
+        changed, display_hurtboxes = imgui.checkbox("Display Hurtboxes", display_hurtboxes)
+        changed, display_pushboxes = imgui.checkbox("Display Pushboxes", display_pushboxes)
+        changed, display_throwboxes = imgui.checkbox("Display Throw Boxes", display_throwboxes)
+        changed, display_throwhurtboxes = imgui.checkbox("Display Throw Hurtboxes", display_throwhurtboxes)
+        changed, display_proximityboxes = imgui.checkbox("Display Proximity Boxes", display_proximityboxes)
+        changed, hide_p2 = imgui.checkbox("Hide P2 Boxes", hide_p2)
+        imgui.tree_pop()
+    end
 end)
 
 re.on_frame(function()
