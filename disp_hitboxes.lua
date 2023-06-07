@@ -4,6 +4,7 @@ local display_pushboxes = true
 local display_throwboxes = true
 local display_throwhurtboxes = true
 local display_proximityboxes = true
+local hide_p2 = false
 local changed
 local gBattle
 
@@ -28,6 +29,7 @@ re.on_draw_ui(function()
     changed, display_throwboxes = imgui.checkbox("Display Throw Boxes", display_throwboxes)
     changed, display_throwhurtboxes = imgui.checkbox("Display Throw Hurtboxes", display_throwhurtboxes)
     changed, display_proximityboxes = imgui.checkbox("Display Proximity Boxes", display_proximityboxes)
+    changed, hide_p2 = imgui.checkbox("Hide P2 Boxes", hide_p2)
 end)
 
 re.on_frame(function()
@@ -93,6 +95,7 @@ re.on_frame(function()
         local sPlayer = gBattle:get_field("Player"):get_data(nil)
         local cPlayer = sPlayer.mcPlayer
         for i, player in pairs(cPlayer) do
+            if hide_p2 and i % 2 > 0 then return end
             local actParam = player.mpActParam
             if actParam then
                 local col = actParam.Collision
