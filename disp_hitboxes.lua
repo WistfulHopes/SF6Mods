@@ -4,6 +4,7 @@ local display_pushboxes = true
 local display_throwboxes = true
 local display_throwhurtboxes = true
 local display_proximityboxes = true
+local display_properties = true
 local hide_p2 = false
 local changed
 local gBattle
@@ -16,10 +17,11 @@ local reversePairs = function ( aTable )
 
 	local n = 0
 
-	return function ( )
-		n = n + 1
-		return keys[n], aTable[keys[n] ]
-	end
+    return function ( )
+        n = n + 1
+        if n > #keys then return nil, nil end
+        return keys[n], aTable[keys[n] ]
+    end
 end
 
 re.on_draw_ui(function()
@@ -30,6 +32,7 @@ re.on_draw_ui(function()
         changed, display_throwboxes = imgui.checkbox("Display Throw Boxes", display_throwboxes)
         changed, display_throwhurtboxes = imgui.checkbox("Display Throw Hurtboxes", display_throwhurtboxes)
         changed, display_proximityboxes = imgui.checkbox("Display Proximity Boxes", display_proximityboxes)
+		changed, display_properties = imgui.checkbox("Display Properties", display_properties)
         changed, hide_p2 = imgui.checkbox("Hide P2 Boxes", hide_p2)
         imgui.tree_pop()
     end
@@ -69,12 +72,12 @@ re.on_frame(function()
                                 if rect.TypeFlag > 0 and display_hitboxes then 
                                     draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF0040C0)
                                     draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x600040C0)
-                                elseif rect.CondFlag & 0x2C0 == 0x2C0 and display_throwboxes then
+                                elseif (rect.TypeFlag == 0 and rect.PoseBit > 0) and display_throwboxes then
                                     draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFD080FF)
                                     draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x60D080FF)
                                 elseif display_proximityboxes then
-                                    draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0080)
-                                    draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x40FF0080)
+                                    draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF5b5b5b)
+                                    draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x405b5b5b)
                                 end
                             elseif rect:get_field("Attr") ~= nil then
                                 if display_pushboxes then
@@ -83,8 +86,26 @@ re.on_frame(function()
                                 end
                             elseif rect:get_field("HitNo") ~= nil then
                                 if display_hurtboxes then
-                                    draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF00FF00)
-                                    draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4000FF00)
+									if rect.Type == 2 or rect.Type == 1 then
+										draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0080)
+										draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x40FF0080)
+									else
+										draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF00FF00)
+										draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4000FF00)
+									end
+									if rect.TypeFlag == 1 and rect.Immune == 4 and display_properties then
+										draw.text("Air Strike Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
+										draw.text("Projectile Inv", finalPosX, finalPosY + (finalSclY / 2) - 10, 0xFFFFFF00)
+									elseif rect.TypeFlag == 2 and rect.Immune == 4 and display_properties then
+										draw.text("Strike Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
+										draw.text("Projectile Inv", finalPosX, finalPosY + (finalSclY / 2) - 10, 0xFFFFFF00)
+									elseif rect.TypeFlag == 1 and display_properties then
+										draw.text("Projectile Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
+									elseif rect.Immune == 4 and display_properties then
+										draw.text("Air Strike Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
+									elseif rect.TypeFlag == 2 and display_properties then
+										draw.text("Strike Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
+									end
                                 end
                             elseif display_throwboxes then
                                 draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0000)
@@ -127,12 +148,12 @@ re.on_frame(function()
                                 if rect.TypeFlag > 0 and display_hitboxes then 
                                     draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF0040C0)
                                     draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x600040C0)
-                                elseif rect.CondFlag & 0x2C0 == 0x2C0 and display_throwboxes then
+								elseif (rect.TypeFlag == 0 and rect.PoseBit > 0) and display_throwboxes then
                                     draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFD080FF)
                                     draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x60D080FF)
                                 elseif display_proximityboxes then
-                                    draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0080)
-                                    draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x40FF0080)
+                                    draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF5b5b5b)
+                                    draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x405b5b5b)
                                 end
                             elseif rect:get_field("Attr") ~= nil then
                                 if display_pushboxes then
@@ -141,8 +162,26 @@ re.on_frame(function()
                                 end
                             elseif rect:get_field("HitNo") ~= nil then
                                 if display_hurtboxes then
-                                    draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF00FF00)
-                                    draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4000FF00)
+                                    if rect.Type == 2 or rect.Type == 1 then
+										draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0080)
+										draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x40FF0080)
+									else
+										draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF00FF00)
+										draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4000FF00)
+									end
+									if rect.TypeFlag == 1 and rect.Immune == 4 and display_properties then
+										draw.text("Air Strike Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
+										draw.text("Projectile Inv", finalPosX, finalPosY + (finalSclY / 2) - 10, 0xFFFFFF00)
+									elseif rect.TypeFlag == 2 and rect.Immune == 4 and display_properties then
+										draw.text("Strike Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
+										draw.text("Projectile Inv", finalPosX, finalPosY + (finalSclY / 2) - 10, 0xFFFFFF00)
+									elseif rect.TypeFlag == 1 and display_properties then
+										draw.text("Projectile Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
+									elseif rect.Immune == 4 and display_properties then
+										draw.text("Air Strike Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
+									elseif rect.TypeFlag == 2 and display_properties then
+										draw.text("Strike Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
+									end
                                 end
                             elseif display_throwboxes then
                                 draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0000)

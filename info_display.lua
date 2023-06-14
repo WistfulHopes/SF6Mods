@@ -49,34 +49,42 @@ re.on_frame(function()
         local cPlayer = sPlayer.mcPlayer
         local BattleTeam = gBattle:get_field("Team"):get_data(nil)
         local cTeam = BattleTeam.mcTeam
-        
-        p1.posX = cPlayer[0].pos.x.v / 65336.0
-        p1.posY = cPlayer[0].pos.y.v / 65336.0
-        p1.spdX = cPlayer[0].speed.x.v / 65336.0
-        p1.spdY = cPlayer[0].speed.y.v / 65336.0
-        p1.aclX = cPlayer[0].alpha.x.v / 65336.0
-        p1.aclY = cPlayer[0].alpha.y.v / 65336.0
+		local storageData = gBattle:get_field("Command"):get_data(nil).StorageData
+		local p1ChargeInfo = storageData.UserEngines[0].m_charge_infos
+		
+        p1.mActionId = cPlayer[0].mActionId
+        p1.posX = cPlayer[0].pos.x.v / 65536.0
+        p1.posY = cPlayer[0].pos.y.v / 65536.0
+        p1.spdX = cPlayer[0].speed.x.v / 65536.0
+        p1.spdY = cPlayer[0].speed.y.v / 65536.0
+        p1.aclX = cPlayer[0].alpha.x.v / 65536.0
+        p1.aclY = cPlayer[0].alpha.y.v / 65536.0
         p1.dir = bitand(cPlayer[0].BitValue, 128) == 128
         p1.hitstop = cPlayer[0].hit_stop
         p1.stance = cPlayer[0].pose_st
         p1.juggle = cPlayer[0].combo_dm_air
         p1.drive = cPlayer[0].focus_new
+        p1.drive_cooldown = cPlayer[0].focus_wait
         p1.super = cTeam[0].mSuperGauge
+		p1.chargeInfo = p1ChargeInfo
 
-        p2.posX = cPlayer[1].pos.x.v / 65336.0
-        p2.posY = cPlayer[1].pos.y.v / 65336.0
-        p2.spdX = cPlayer[1].speed.x.v / 65336.0
-        p2.spdY = cPlayer[1].speed.y.v / 65336.0
-        p2.aclX = cPlayer[1].alpha.x.v / 65336.0
-        p2.aclY = cPlayer[1].alpha.y.v / 65336.0
+		p2.mActionId = cPlayer[1].mActionId
+        p2.posX = cPlayer[1].pos.x.v / 65536.0
+        p2.posY = cPlayer[1].pos.y.v / 65536.0
+        p2.spdX = cPlayer[1].speed.x.v / 65536.0
+        p2.spdY = cPlayer[1].speed.y.v / 65536.0
+        p2.aclX = cPlayer[1].alpha.x.v / 65536.0
+        p2.aclY = cPlayer[1].alpha.y.v / 65536.0
         p2.dir = bitand(cPlayer[1].BitValue, 128) == 128
         p2.hitstop = cPlayer[1].hit_stop
         p2.stance = cPlayer[1].pose_st
         p2.juggle = cPlayer[1].combo_dm_air
         p2.drive = cPlayer[1].focus_new
+        p2.drive_cooldown = cPlayer[1].focus_wait
         p2.super = cTeam[1].mSuperGauge
 
         if imgui.tree_node("P1 Info") then
+			imgui.text("P1 Action ID: " .. p1.mActionId)
             imgui.text("Position X: " .. p1.posX)
             imgui.text("Position Y: " .. p1.posY)
             imgui.text("Speed X: " .. p1.spdX)
@@ -98,11 +106,21 @@ re.on_frame(function()
             end
             imgui.text("Juggle Counter: " .. p2.juggle)
             imgui.text("Drive Gauge: " .. p1.drive)
+            imgui.text("Drive Cooldown: " .. p1.drive_cooldown)
             imgui.text("Super Gauge: " .. p1.super)
+			if p1.chargeInfo:get_Count() > 0 then
+				imgui.text("Move 1 Charge Time: " .. p1.chargeInfo:get_Values()._dictionary._entries[0].value.charge_frame)
+				imgui.text("Move 1 Charge Keep Time: " .. p1.chargeInfo:get_Values()._dictionary._entries[0].value.keep_frame)
+				imgui.text("Move 2 Charge Time: " .. p1.chargeInfo:get_Values()._dictionary._entries[1].value.charge_frame)
+				imgui.text("Move 2 Charge Keep Time: " .. p1.chargeInfo:get_Values()._dictionary._entries[1].value.keep_frame)
+				imgui.text("Move 3 Charge Time: " .. p1.chargeInfo:get_Values()._dictionary._entries[2].value.charge_frame)
+				imgui.text("Move 3 Charge Keep Time: " .. p1.chargeInfo:get_Values()._dictionary._entries[2].value.keep_frame)
+			end
             imgui.tree_pop()
         end
 
         if imgui.tree_node("P2 Info") then
+			imgui.text("P1 Action ID: " .. p1.mActionId)
             imgui.text("Position X: " .. p2.posX)
             imgui.text("Position Y: " .. p2.posY)
             imgui.text("Speed X: " .. p2.spdX)
@@ -124,6 +142,7 @@ re.on_frame(function()
             end
             imgui.text("Juggle Counter: " .. p1.juggle)
             imgui.text("Drive Gauge: " .. p2.drive)
+            imgui.text("Drive Cooldown: " .. p2.drive_cooldown)
             imgui.text("Super Gauge: " .. p2.super)
             imgui.tree_pop()
         end
