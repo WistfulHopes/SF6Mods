@@ -72,7 +72,7 @@ re.on_frame(function()
                                 if rect.TypeFlag > 0 and display_hitboxes then 
                                     draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF0040C0)
                                     draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x600040C0)
-                                elseif (rect.TypeFlag == 0 and rect.PoseBit > 0) and display_throwboxes then
+                                elseif ((rect.TypeFlag == 0 and rect.PoseBit > 0) or rect.CondFlag == 0x2C0) and display_throwboxes then
                                     draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFD080FF)
                                     draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x60D080FF)
                                 elseif display_proximityboxes then
@@ -148,7 +148,7 @@ re.on_frame(function()
                                 if rect.TypeFlag > 0 and display_hitboxes then 
                                     draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF0040C0)
                                     draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x600040C0)
-								elseif (rect.TypeFlag == 0 and rect.PoseBit > 0) and display_throwboxes then
+								elseif ((rect.TypeFlag == 0 and rect.PoseBit > 0) or rect.CondFlag == 0x2C0) and display_throwboxes then
                                     draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFD080FF)
                                     draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x60D080FF)
                                 elseif display_proximityboxes then
