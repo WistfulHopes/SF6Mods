@@ -59,7 +59,11 @@ local get_hitbox_range = function ( player, actParam, list )
 				if rect:get_field("HitPos") ~= nil then
 					local hitbox_X
 					if rect.TypeFlag > 0 or (rect.TypeFlag == 0 and rect.PoseBit > 0) then
-						hitbox_X = posX + sclX / 2
+                        if facingRight then
+                            hitbox_X = posX + sclX / 2
+                        else
+                            hitbox_X = posX - sclX / 2
+                        end
 						if maxHitboxEdgeX == nil then
 							maxHitboxEdgeX = hitbox_X
 						end
