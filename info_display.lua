@@ -32,6 +32,52 @@ function bitand(a, b)
     return result
 end
 
+local abs = function(num)
+	if num < 0 then
+		return num * -1
+	else
+		return num
+	end
+end
+
+local get_hitbox_range = function ( player, actParam )
+	local facingRight = bitand(player.BitValue, 128) == 128
+	local maxHitboxEdgeX = nil
+	if actParam ~= nil then
+		local col = actParam.Collision
+		   for j, rect in reversePairs(col.Infos._items) do
+			if rect ~= nil then
+				local posX = rect.OffsetX.v / 6553600.0
+				local posY = rect.OffsetY.v / 6553600.0
+				local sclX = rect.SizeX.v / 6553600.0 * 2
+				local sclY = rect.SizeY.v / 6553600.0 * 2
+				if rect:get_field("HitPos") ~= nil then
+					local hitbox_X
+					if rect.TypeFlag > 0 or (rect.TypeFlag == 0 and rect.PoseBit > 0) then
+						hitbox_X = posX + sclX / 2
+						if maxHitboxEdgeX == nil then
+							maxHitboxEdgeX = hitbox_X
+						end
+						if maxHitboxEdgeX ~= nil then
+							if facingRight and hitbox_X > maxHitboxEdgeX then
+								maxHitboxEdgeX = hitbox_X
+							elseif hitbox_X < maxHitboxEdgeX then
+								maxHitboxEdgeX = hitbox_X
+							end
+						end
+					end
+				end
+			end
+		end
+		if maxHitboxEdgeX ~= nil then
+			local playerPosX = player.pos.x.v / 6553600.0
+			local playerStartPosX = player.start_pos.x.v / 6553600.0
+			imgui.text("Absolute Range: " .. abs(maxHitboxEdgeX - playerStartPosX))
+			imgui.text("Relative Range: " .. abs(maxHitboxEdgeX - playerPosX))
+		end
+	end
+end
+
 re.on_draw_ui(function()
     if imgui.tree_node("Battle Info Display") then
         changed, display_info = imgui.checkbox("Display Battle Info", display_info)
@@ -116,6 +162,9 @@ re.on_frame(function()
 				imgui.text("Move 3 Charge Time: " .. p1.chargeInfo:get_Values()._dictionary._entries[2].value.charge_frame)
 				imgui.text("Move 3 Charge Keep Time: " .. p1.chargeInfo:get_Values()._dictionary._entries[2].value.keep_frame)
 			end
+			
+			get_hitbox_range(cPlayer[0], cPlayer[0].mpActParam)
+			
             imgui.tree_pop()
         end
 
