@@ -4,6 +4,11 @@ local p2 = {}
 local changed
 local display_info = true
 
+p1.absolute_range = 0
+p1.relative_range = 0
+p2.absolute_range = 0
+p2.relative_range = 0
+
 local reversePairs = function ( aTable )
 	local keys = {}
 
@@ -40,7 +45,7 @@ local abs = function(num)
 	end
 end
 
-local get_hitbox_range = function ( player, actParam )
+local get_hitbox_range = function ( player, actParam, list )
 	local facingRight = bitand(player.BitValue, 128) == 128
 	local maxHitboxEdgeX = nil
 	if actParam ~= nil then
@@ -72,8 +77,8 @@ local get_hitbox_range = function ( player, actParam )
 		if maxHitboxEdgeX ~= nil then
 			local playerPosX = player.pos.x.v / 6553600.0
 			local playerStartPosX = player.start_pos.x.v / 6553600.0
-			imgui.text("Absolute Range: " .. abs(maxHitboxEdgeX - playerStartPosX))
-			imgui.text("Relative Range: " .. abs(maxHitboxEdgeX - playerPosX))
+            list.absolute_range = abs(maxHitboxEdgeX - playerStartPosX)
+            list.relative_range = abs(maxHitboxEdgeX - playerPosX)
 		end
 	end
 end
@@ -97,6 +102,7 @@ re.on_frame(function()
         local cTeam = BattleTeam.mcTeam
 		local storageData = gBattle:get_field("Command"):get_data(nil).StorageData
 		local p1ChargeInfo = storageData.UserEngines[0].m_charge_infos
+		local p2ChargeInfo = storageData.UserEngines[1].m_charge_infos
 		
         p1.mActionId = cPlayer[0].mActionId
         p1.posX = cPlayer[0].pos.x.v / 65536.0
@@ -128,6 +134,7 @@ re.on_frame(function()
         p2.drive = cPlayer[1].focus_new
         p2.drive_cooldown = cPlayer[1].focus_wait
         p2.super = cTeam[1].mSuperGauge
+		p2.chargeInfo = p2ChargeInfo
 
         if imgui.tree_node("P1 Info") then
 			imgui.text("P1 Action ID: " .. p1.mActionId)
@@ -163,8 +170,11 @@ re.on_frame(function()
 				imgui.text("Move 3 Charge Keep Time: " .. p1.chargeInfo:get_Values()._dictionary._entries[2].value.keep_frame)
 			end
 			
-			get_hitbox_range(cPlayer[0], cPlayer[0].mpActParam)
+			get_hitbox_range(cPlayer[0], cPlayer[0].mpActParam, p1)
 			
+			imgui.text("Absolute Range: " .. p1.absolute_range)
+			imgui.text("Relative Range: " .. p1.relative_range)
+
             imgui.tree_pop()
         end
 
@@ -193,6 +203,21 @@ re.on_frame(function()
             imgui.text("Drive Gauge: " .. p2.drive)
             imgui.text("Drive Cooldown: " .. p2.drive_cooldown)
             imgui.text("Super Gauge: " .. p2.super)
+
+			if p2.chargeInfo:get_Count() > 0 then
+				imgui.text("Move 1 Charge Time: " .. p2.chargeInfo:get_Values()._dictionary._entries[0].value.charge_frame)
+				imgui.text("Move 1 Charge Keep Time: " .. p2.chargeInfo:get_Values()._dictionary._entries[0].value.keep_frame)
+				imgui.text("Move 2 Charge Time: " .. p2.chargeInfo:get_Values()._dictionary._entries[1].value.charge_frame)
+				imgui.text("Move 2 Charge Keep Time: " .. p2.chargeInfo:get_Values()._dictionary._entries[1].value.keep_frame)
+				imgui.text("Move 3 Charge Time: " .. p2.chargeInfo:get_Values()._dictionary._entries[2].value.charge_frame)
+				imgui.text("Move 3 Charge Keep Time: " .. p2.chargeInfo:get_Values()._dictionary._entries[2].value.keep_frame)
+			end
+			
+			get_hitbox_range(cPlayer[1], cPlayer[1].mpActParam, p2)
+			
+			imgui.text("Absolute Range: " .. p2.absolute_range)
+			imgui.text("Relative Range: " .. p2.relative_range)
+
             imgui.tree_pop()
         end
         imgui.end_window()
