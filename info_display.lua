@@ -186,7 +186,7 @@ re.on_frame(function()
         end
 
         if imgui.tree_node("P2 Info") then
-			imgui.text("P1 Action ID: " .. p1.mActionId)
+			imgui.text("P2 Action ID: " .. p2.mActionId)
             imgui.text("Position X: " .. p2.posX)
             imgui.text("Position Y: " .. p2.posY)
             imgui.text("Speed X: " .. p2.spdX)
