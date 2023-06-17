@@ -122,6 +122,7 @@ re.on_frame(function()
         p1.drive = cPlayer[0].focus_new
         p1.drive_cooldown = cPlayer[0].focus_wait
         p1.super = cTeam[0].mSuperGauge
+		p1.buff = cPlayer[0].style_timer
 		p1.chargeInfo = p1ChargeInfo
 
 		p2.mActionId = cPlayer[1].mActionId
@@ -138,6 +139,7 @@ re.on_frame(function()
         p2.drive = cPlayer[1].focus_new
         p2.drive_cooldown = cPlayer[1].focus_wait
         p2.super = cTeam[1].mSuperGauge
+		p2.buff = cPlayer[1].style_timer
 		p2.chargeInfo = p2ChargeInfo
 
         if imgui.tree_node("P1 Info") then
@@ -165,6 +167,7 @@ re.on_frame(function()
             imgui.text("Drive Gauge: " .. p1.drive)
             imgui.text("Drive Cooldown: " .. p1.drive_cooldown)
             imgui.text("Super Gauge: " .. p1.super)
+			imgui.text("Buff Timer: " .. p1.buff)
 			if p1.chargeInfo:get_Count() > 0 then
 				imgui.text("Move 1 Charge Time: " .. p1.chargeInfo:get_Values()._dictionary._entries[0].value.charge_frame)
 				imgui.text("Move 1 Charge Keep Time: " .. p1.chargeInfo:get_Values()._dictionary._entries[0].value.keep_frame)
@@ -183,7 +186,7 @@ re.on_frame(function()
         end
 
         if imgui.tree_node("P2 Info") then
-			imgui.text("P1 Action ID: " .. p1.mActionId)
+			imgui.text("P2 Action ID: " .. p2.mActionId)
             imgui.text("Position X: " .. p2.posX)
             imgui.text("Position Y: " .. p2.posY)
             imgui.text("Speed X: " .. p2.spdX)
@@ -207,7 +210,7 @@ re.on_frame(function()
             imgui.text("Drive Gauge: " .. p2.drive)
             imgui.text("Drive Cooldown: " .. p2.drive_cooldown)
             imgui.text("Super Gauge: " .. p2.super)
-
+			imgui.text("Buff Timer: " .. p2.buff)
 			if p2.chargeInfo:get_Count() > 0 then
 				imgui.text("Move 1 Charge Time: " .. p2.chargeInfo:get_Values()._dictionary._entries[0].value.charge_frame)
 				imgui.text("Move 1 Charge Keep Time: " .. p2.chargeInfo:get_Values()._dictionary._entries[0].value.keep_frame)
