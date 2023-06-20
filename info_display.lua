@@ -283,7 +283,7 @@ re.on_frame(function()
 			if imgui.tree_node("P1 Projectile Info") then		
 				for i, obj in pairs(cWork) do
 					if obj.owner_add ~= nil and obj.pl_no == 0 then
-						if imgui.tree_node("Projectile" .. i) then
+						if imgui.tree_node("Projectile " .. i) then
 							imgui.text("Action ID: " .. obj.mActionId)
 							imgui.text("Position X: " .. obj.pos.x.v / 65536.0)
 							imgui.text("Position Y: " .. obj.pos.y.v / 65536.0)
@@ -299,7 +299,7 @@ re.on_frame(function()
 			if imgui.tree_node("P2 Projectile Info") then		
 				for i, obj in pairs(cWork) do
 					if obj.owner_add ~= nil and obj.pl_no == 1 then
-						if imgui.tree_node("Projectile" .. i) then
+						if imgui.tree_node("Projectile " .. i) then
 							imgui.text("Action ID: " .. obj.mActionId)
 							imgui.text("Position X: " .. obj.pos.x.v / 65536.0)
 							imgui.text("Position Y: " .. obj.pos.y.v / 65536.0)
