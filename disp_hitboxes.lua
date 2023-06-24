@@ -49,45 +49,59 @@ local draw_boxes = function ( work, actParam )
 				local finalSclX = (screenTR.x - screenTL.x)
 				local finalSclY = (screenTL.y - screenBL.y)
 				
+				-- If the rectangle has a HitPos field, draw it as a hitbox
 				if rect:get_field("HitPos") ~= nil then
+					-- TypeFlag > 0 indicates a regular hitbox
 					if rect.TypeFlag > 0 and display_hitboxes then 
 						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF0040C0)
 						draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x600040C0)
+					-- Throws almost universally have a TypeFlag of 0 and a PoseBit > 0; JP's command grab projectile has neither and must be caught with CondFlag of 0x2C0
 					elseif ((rect.TypeFlag == 0 and rect.PoseBit > 0) or rect.CondFlag == 0x2C0) and display_throwboxes then
 						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFD080FF)
 						draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x60D080FF)
+					-- Any remaining boxes are drawn as proximity boxes
 					elseif display_proximityboxes then
 						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF5b5b5b)
 						draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x405b5b5b)
 					end
+				-- If the box contains the Attr field, then it is a pushbox
 				elseif rect:get_field("Attr") ~= nil then
 					if display_pushboxes then
 						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF00FFFF)
 						draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4000FFFF)
 					end
+				-- If the rectangle has a HitNo field, and is not already a hitbox, draw a hurtbox
 				elseif rect:get_field("HitNo") ~= nil then
 					if display_hurtboxes then
-						if rect.Type == 2 or rect.Type == 1 then
+						-- Armor (Type: 1) & Parry (Type: 2) Boxes
+						if rect.Type == 2 or rect.Type == 1 then			
 							draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0080)
 							draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x40FF0080)
+						-- All other hurtboxes
 						else
 							draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF00FF00)
 							draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4000FF00)
 						end
-						if rect.TypeFlag == 1 and rect.Immune == 4 and display_properties then
-							draw.text("Air Strike Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
-							draw.text("Projectile Inv", finalPosX, finalPosY + (finalSclY / 2) - 10, 0xFFFFFF00)
-						elseif rect.TypeFlag == 2 and rect.Immune == 4 and display_properties then
-							draw.text("Strike Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
-							draw.text("Projectile Inv", finalPosX, finalPosY + (finalSclY / 2) - 10, 0xFFFFFF00)
-						elseif rect.TypeFlag == 1 and display_properties then
+						-- Display properties as text (each at a unique height)
+						-- TypeFlag:	1	(Projectile Invuln)
+						-- TypeFlag:	2	(Strike Invuln)
+						-- Immune:		4	(Air Strike Invuln )
+						-- Immune:		11	(Ground Strike Invuln)
+						if rect.TypeFlag == 1 and display_properties then
 							draw.text("Projectile Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
-						elseif rect.Immune == 4 and display_properties then
-							draw.text("Air Strike Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
-						elseif rect.TypeFlag == 2 and display_properties then
-							draw.text("Strike Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
+						end
+						if rect.TypeFlag == 2 and display_properties then
+							draw.text("Full Strike Inv", finalPosX, finalPosY + (finalSclY / 2) - 10, 0xFFFFFF00)
+						end
+						if rect.Immune == 4 and display_properties then
+							draw.text("Air Strike Inv", finalPosX, finalPosY + (finalSclY / 2) - 20, 0xFFFFFF00)
+						end
+						if rect.Immune == 11 and display_properties then
+							draw.text("Ground Strike Inv", finalPosX, finalPosY + (finalSclY / 2) - 30, 0xFFFFFF00)
 						end
 					end
+				-- Any remaining rectangles are drawn as a grab box
+				-- This includes UniqueBoxes (e.g., Guile 214P), as there is currently no known way to delineate the two
 				elseif display_throwhurtboxes then
 					draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0000)
 					draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x60FF0000)
