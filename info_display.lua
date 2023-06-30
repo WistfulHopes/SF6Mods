@@ -123,12 +123,12 @@ re.on_frame(function()
         p1.super = cTeam[0].mSuperGauge
 		p1.buff = cPlayer[0].style_timer
 		p1.chargeInfo = p1ChargeInfo
-		p1.posX = cPlayer[0].pos.x.v / 65536.0
-        p1.posY = cPlayer[0].pos.y.v / 65536.0
-        p1.spdX = cPlayer[0].speed.x.v / 65536.0
-        p1.spdY = cPlayer[0].speed.y.v / 65536.0
-        p1.aclX = cPlayer[0].alpha.x.v / 65536.0
-        p1.aclY = cPlayer[0].alpha.y.v / 65536.0
+		p1.posX = cPlayer[0].pos.x.v / 6553600.0
+        p1.posY = cPlayer[0].pos.y.v / 6553600.0
+        p1.spdX = cPlayer[0].speed.x.v / 6553600.0
+        p1.spdY = cPlayer[0].speed.y.v / 6553600.0
+        p1.aclX = cPlayer[0].alpha.x.v / 6553600.0
+        p1.aclY = cPlayer[0].alpha.y.v / 6553600.0
 		
 		p2.mActionId = cPlayer[1].mActionId
         p2.dir = bitand(cPlayer[1].BitValue, 128) == 128
@@ -142,12 +142,12 @@ re.on_frame(function()
         p2.super = cTeam[1].mSuperGauge
 		p2.buff = cPlayer[1].style_timer
 		p2.chargeInfo = p2ChargeInfo
-		p2.posX = cPlayer[1].pos.x.v / 65536.0
-        p2.posY = cPlayer[1].pos.y.v / 65536.0
-        p2.spdX = cPlayer[1].speed.x.v / 65536.0
-        p2.spdY = cPlayer[1].speed.y.v / 65536.0
-        p2.aclX = cPlayer[1].alpha.x.v / 65536.0
-        p2.aclY = cPlayer[1].alpha.y.v / 65536.0
+		p2.posX = cPlayer[1].pos.x.v / 6553600.0
+        p2.posY = cPlayer[1].pos.y.v / 6553600.0
+        p2.spdX = cPlayer[1].speed.x.v / 6553600.0
+        p2.spdY = cPlayer[1].speed.y.v / 6553600.0
+        p2.aclX = cPlayer[1].alpha.x.v / 6553600.0
+        p2.aclY = cPlayer[1].alpha.y.v / 6553600.0
 
 		if display_player_info then
 			imgui.begin_window("Player Data", true, 0)
@@ -185,7 +185,15 @@ re.on_frame(function()
 					imgui.tree_pop()
 				end
 				if imgui.tree_node("Attack Info") then
-					imgui.text("Hitstop: " .. p1.hitstop)
+					if p1.hitstop > 0 then
+						p1.hitstopcheck = p1.hitstop + 1
+						imgui.text("Hitstop: " .. p1.hitstop + 1)
+					elseif p1.hitstop == 0 and p1.hitstopcheck == 2 then
+						imgui.text("Hitstop: 1")
+						p1.hitstopcheck = p1.hitstop
+					else
+						imgui.text("Hitstop: " .. p1.hitstop)
+					end
 					imgui.text("Dealt Hitstun: " .. p2.hitstun)
 					imgui.text("Dealt Blockstun: " .. p2.blockstun)
 					imgui.text("Juggle Counter: " .. p2.juggle)
@@ -246,7 +254,15 @@ re.on_frame(function()
 					imgui.tree_pop()
 				end
 				if imgui.tree_node("Attack Info") then
-					imgui.text("Hitstop: " .. p2.hitstop)
+					if p2.hitstop > 0 then
+						p2.hitstopcheck = p2.hitstop + 1
+						imgui.text("Hitstop: " .. p2.hitstop + 1)
+					elseif p2.hitstop == 0 and p2.hitstopcheck == 2 then
+						imgui.text("Hitstop: 1")
+						p2.hitstopcheck = p2.hitstop
+					else
+						imgui.text("Hitstop: " .. p2.hitstop)
+					end
 					imgui.text("Dealt Hitstun: " .. p1.hitstun)
 					imgui.text("Dealt Blockstun: " .. p1.blockstun)
 					imgui.text("Juggle Counter: " .. p1.juggle)
@@ -285,9 +301,9 @@ re.on_frame(function()
 					if obj.owner_add ~= nil and obj.pl_no == 0 then
 						if imgui.tree_node("Projectile " .. i) then
 							imgui.text("Action ID: " .. obj.mActionId)
-							imgui.text("Position X: " .. obj.pos.x.v / 65536.0)
-							imgui.text("Position Y: " .. obj.pos.y.v / 65536.0)
-							imgui.text("Speed X: " .. obj.speed.x.v / 65536.0)
+							imgui.text("Position X: " .. obj.pos.x.v / 6553600.0)
+							imgui.text("Position Y: " .. obj.pos.y.v / 6553600.0)
+							imgui.text("Speed X: " .. obj.speed.x.v / 6553600.0)
 							imgui.tree_pop()
 						end
 					end
@@ -301,9 +317,9 @@ re.on_frame(function()
 					if obj.owner_add ~= nil and obj.pl_no == 1 then
 						if imgui.tree_node("Projectile " .. i) then
 							imgui.text("Action ID: " .. obj.mActionId)
-							imgui.text("Position X: " .. obj.pos.x.v / 65536.0)
-							imgui.text("Position Y: " .. obj.pos.y.v / 65536.0)
-							imgui.text("Speed X: " .. obj.speed.x.v / 65536.0)
+							imgui.text("Position X: " .. obj.pos.x.v / 6553600.0)
+							imgui.text("Position Y: " .. obj.pos.y.v / 6553600.0)
+							imgui.text("Speed X: " .. obj.speed.x.v / 6553600.0)
 							imgui.tree_pop()
 						end
 					end

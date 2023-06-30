@@ -25,6 +25,19 @@ local reversePairs = function ( aTable )
     end
 end
 
+function bitand(a, b)
+    local result = 0
+    local bitval = 1
+    while a > 0 and b > 0 do
+      if a % 2 == 1 and b % 2 == 1 then -- test the rightmost bits
+          result = result + bitval      -- set the current bit
+      end
+      bitval = bitval * 2 -- shift left
+      a = math.floor(a/2) -- shift right
+      b = math.floor(b/2)
+    end
+    return result
+end
 
 local draw_boxes = function ( work, actParam )
     local col = actParam.Collision
@@ -55,6 +68,26 @@ local draw_boxes = function ( work, actParam )
 					if rect.TypeFlag > 0 and display_hitboxes then 
 						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF0040C0)
 						draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x600040C0)
+						-- Display hitbox properties (each at a unique height)
+						-- CondFlag: 512	(Can't hit behind the player)
+						-- CondFlag: 256	(Can't hit in front of the player)
+						-- CondFlag: 32		(Can't hit crouching opponents)
+						-- CondFlag: 16		(Can't hit standing opponent)
+						if display_properties then
+							if bitand(rect.CondFlag, 512) == 512 then
+								draw.text("CantHitBack", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
+							end
+							-- Mutually exclusive with CantHitBack (in theory), so it doesn't need a unique row height
+							if bitand(rect.CondFlag, 256) == 256 then
+								draw.text("CantHitFront", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
+							end
+							if bitand(rect.CondFlag, 32) == 32 then
+								draw.text("CantHitCrouch", finalPosX, finalPosY + (finalSclY / 2) - 10, 0xFFFFFF00)
+							end
+							if bitand(rect.CondFlag, 16) == 16 then
+								draw.text("CantHitStanding", finalPosX, finalPosY + (finalSclY / 2) - 20, 0xFFFFFF00)
+							end
+						end
 					-- Throws almost universally have a TypeFlag of 0 and a PoseBit > 0; JP's command grab projectile has neither and must be caught with CondFlag of 0x2C0
 					elseif ((rect.TypeFlag == 0 and rect.PoseBit > 0) or rect.CondFlag == 0x2C0) and display_throwboxes then
 						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFD080FF)
