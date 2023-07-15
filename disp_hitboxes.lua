@@ -6,9 +6,7 @@ local display_throwhurtboxes = true
 local display_proximityboxes = true
 local display_properties = true
 local display_position = true
-local color_toggle = true
 local hide_p2 = false
-local ColorPicker
 local changed
 local gBattle
 
