@@ -112,6 +112,9 @@ re.on_frame(function()
 		local cWork = sWork.Global_work
 		
 		p1.mActionId = cPlayer[0].mActionId
+		p1.HP_cap = cPlayer[0].vital_old
+		p1.current_HP = cPlayer[0].vital_new
+		p1.HP_cooldown = cPlayer[0].healing_wait
         p1.dir = bitand(cPlayer[0].BitValue, 128) == 128
         p1.hitstop = cPlayer[0].hit_stop
 		p1.hitstun = cPlayer[0].damage_time
@@ -129,8 +132,12 @@ re.on_frame(function()
         p1.spdY = cPlayer[0].speed.y.v / 6553600.0
         p1.aclX = cPlayer[0].alpha.x.v / 6553600.0
         p1.aclY = cPlayer[0].alpha.y.v / 6553600.0
+		p1.pushback = cPlayer[0].vector_zuri.speed.v / 6553600.0
 		
 		p2.mActionId = cPlayer[1].mActionId
+		p2.HP_cap = cPlayer[1].vital_old
+		p2.current_HP = cPlayer[1].vital_new
+		p2.HP_cooldown = cPlayer[1].healing_wait
         p2.dir = bitand(cPlayer[1].BitValue, 128) == 128
         p2.hitstop = cPlayer[1].hit_stop
 		p2.hitstun = cPlayer[1].damage_time
@@ -148,6 +155,7 @@ re.on_frame(function()
         p2.spdY = cPlayer[1].speed.y.v / 6553600.0
         p2.aclX = cPlayer[1].alpha.x.v / 6553600.0
         p2.aclY = cPlayer[1].alpha.y.v / 6553600.0
+		p2.pushback = cPlayer[1].vector_zuri.speed.v / 6553600.0
 
 		if display_player_info then
 			imgui.begin_window("Player Data", true, 0)
@@ -162,6 +170,9 @@ re.on_frame(function()
 					else
 						imgui.text("Stance: Jumping")
 					end
+					imgui.text("Current HP: " .. p1.current_HP)
+					imgui.text("HP Cap: " .. p1.HP_cap)
+					imgui.text("HP Regen Cooldown: " .. p1.HP_cooldown)
 					imgui.text("Drive Gauge: " .. p1.drive)
 					imgui.text("Drive Cooldown: " .. p1.drive_cooldown)
 					imgui.text("Super Gauge: " .. p1.super)
@@ -181,21 +192,14 @@ re.on_frame(function()
 					imgui.text("Speed Y: " .. p1.spdY)
 					imgui.text("Acceleration X: " .. p1.aclX)
 					imgui.text("Acceleration Y: " .. p1.aclY)
+					imgui.text("Pushback: " .. p1.pushback)
 					
 					imgui.tree_pop()
 				end
 				if imgui.tree_node("Attack Info") then
-					if p1.hitstop > 0 then
-						p1.hitstopcheck = p1.hitstop + 1
-						imgui.text("Hitstop: " .. p1.hitstop + 1)
-					elseif p1.hitstop == 0 and p1.hitstopcheck == 2 then
-						imgui.text("Hitstop: 1")
-						p1.hitstopcheck = p1.hitstop
-					else
-						imgui.text("Hitstop: " .. p1.hitstop)
-					end
-					imgui.text("Dealt Hitstun: " .. p2.hitstun)
-					imgui.text("Dealt Blockstun: " .. p2.blockstun)
+					imgui.text("Hitstop: " .. p1.hitstop)
+					imgui.text("Hitstun: " .. p1.hitstun)
+					imgui.text("Blockstun: " .. p1.blockstun)
 					imgui.text("Juggle Counter: " .. p2.juggle)
 					get_hitbox_range(cPlayer[0], cPlayer[0].mpActParam, p1)
 					imgui.text("Absolute Range: " .. p1.absolute_range)
@@ -231,6 +235,9 @@ re.on_frame(function()
 					else
 						imgui.text("Stance: Jumping")
 					end
+					imgui.text("Current HP: " .. p2.current_HP)
+					imgui.text("HP Cap: " .. p2.HP_cap)
+					imgui.text("HP Regen Cooldown: " .. p2.HP_cooldown)
 					imgui.text("Drive Gauge: " .. p2.drive)
 					imgui.text("Drive Cooldown: " .. p2.drive_cooldown)
 					imgui.text("Super Gauge: " .. p2.super)
@@ -250,21 +257,14 @@ re.on_frame(function()
 					imgui.text("Speed Y: " .. p2.spdY)
 					imgui.text("Acceleration X: " .. p2.aclX)
 					imgui.text("Acceleration Y: " .. p2.aclY)
+					imgui.text("Pushback: " .. p2.pushback)
 					
 					imgui.tree_pop()
 				end
 				if imgui.tree_node("Attack Info") then
-					if p2.hitstop > 0 then
-						p2.hitstopcheck = p2.hitstop + 1
-						imgui.text("Hitstop: " .. p2.hitstop + 1)
-					elseif p2.hitstop == 0 and p2.hitstopcheck == 2 then
-						imgui.text("Hitstop: 1")
-						p2.hitstopcheck = p2.hitstop
-					else
-						imgui.text("Hitstop: " .. p2.hitstop)
-					end
-					imgui.text("Dealt Hitstun: " .. p1.hitstun)
-					imgui.text("Dealt Blockstun: " .. p1.blockstun)
+					imgui.text("Hitstop: " .. p2.hitstop)
+					imgui.text("Hitstun: " .. p2.hitstun)
+					imgui.text("Blockstun: " .. p2.blockstun)
 					imgui.text("Juggle Counter: " .. p1.juggle)
 					get_hitbox_range(cPlayer[0], cPlayer[0].mpActParam, p2)
 					imgui.text("Absolute Range: " .. p2.absolute_range)
