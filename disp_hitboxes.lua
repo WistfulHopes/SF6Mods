@@ -69,29 +69,60 @@ local draw_boxes = function ( work, actParam )
 						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF0040C0)
 						draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x600040C0)
 						-- Display hitbox properties (each at a unique height)
+						-- CondFlag: 262144	(Can ONLY hit a juggled opponent)
 						-- CondFlag: 512	(Can't hit behind the player)
 						-- CondFlag: 256	(Can't hit in front of the player)
+						-- CondFlag: 64		(Can't hit airborne)
 						-- CondFlag: 32		(Can't hit crouching opponents)
 						-- CondFlag: 16		(Can't hit standing opponent)
 						if display_properties then
 							if bitand(rect.CondFlag, 512) == 512 then
-								draw.text("CantHitBack", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
+								draw.text("CantHitBack", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFFFF)
 							end
-							-- Mutually exclusive with CantHitBack (in theory), so it doesn't need a unique row height
+							-- CantHitFront is mutually exclusive with CantHitBack (in theory), so it doesn't need a unique row height
 							if bitand(rect.CondFlag, 256) == 256 then
-								draw.text("CantHitFront", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
+								draw.text("CantHitFront", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFFFF)
+							end
+							if bitand(rect.CondFlag, 64) == 64 then
+								draw.text("CantHitAir", finalPosX, finalPosY + (finalSclY / 2) - 10, 0xFFFFFFFF)
 							end
 							if bitand(rect.CondFlag, 32) == 32 then
-								draw.text("CantHitCrouch", finalPosX, finalPosY + (finalSclY / 2) - 10, 0xFFFFFF00)
+								draw.text("CantHitCrouch", finalPosX, finalPosY + (finalSclY / 2) - 20, 0xFFFFFFFF)
 							end
 							if bitand(rect.CondFlag, 16) == 16 then
-								draw.text("CantHitStanding", finalPosX, finalPosY + (finalSclY / 2) - 20, 0xFFFFFF00)
+								draw.text("CantHitStanding", finalPosX, finalPosY + (finalSclY / 2) - 30, 0xFFFFFFFF)
+							end
+							if bitand(rect.CondFlag, 262144) == 262144 then 
+								draw.text("JuggleOnly", finalPosX, finalPosY + (finalSclY / 2) - 40, 0xFFFFFFFF)
 							end
 						end
-					-- Throws almost universally have a TypeFlag of 0 and a PoseBit > 0; JP's command grab projectile has neither and must be caught with CondFlag of 0x2C0
+					-- Throws almost* universally have a TypeFlag of 0 and a PoseBit > 0 
+					-- Except for JP's command grab projectile which has neither and must be caught with CondFlag of 0x2C0
 					elseif ((rect.TypeFlag == 0 and rect.PoseBit > 0) or rect.CondFlag == 0x2C0) and display_throwboxes then
 						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFD080FF)
 						draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x60D080FF)
+						-- Display throwbox properties (each at a unique height)
+						if display_properties then
+							if bitand(rect.CondFlag, 512) == 512 then
+								draw.text("CantHitBack", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFFFF)
+							end
+							-- CantHitFront is mutually exclusive with CantHitBack (in theory), so it doesn't need a unique row height
+							if bitand(rect.CondFlag, 256) == 256 then
+								draw.text("CantHitFront", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFFFF)
+							end
+							if bitand(rect.CondFlag, 64) == 64 then
+								draw.text("CantHitAir", finalPosX, finalPosY + (finalSclY / 2) - 10, 0xFFFFFFFF)
+							end
+							if bitand(rect.CondFlag, 32) == 32 then
+								draw.text("CantHitCrouch", finalPosX, finalPosY + (finalSclY / 2) - 20, 0xFFFFFFFF)
+							end
+							if bitand(rect.CondFlag, 16) == 16 then
+								draw.text("CantHitStanding", finalPosX, finalPosY + (finalSclY / 2) - 30, 0xFFFFFFFF)
+							end
+							if bitand(rect.CondFlag, 262144) == 262144 then 
+								draw.text("JuggleOnly", finalPosX, finalPosY + (finalSclY / 2) - 40, 0xFFFFFFFF)
+							end
+						end
 					-- Any remaining boxes are drawn as proximity boxes
 					elseif display_proximityboxes then
 						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF5b5b5b)
@@ -121,23 +152,23 @@ local draw_boxes = function ( work, actParam )
 						-- Immune:		4	(Air Strike Invuln )
 						-- Immune:		11	(Ground Strike Invuln)
 						if rect.TypeFlag == 1 and display_properties then
-							draw.text("Projectile Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFF00)
+							draw.text("Projectile Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFFFF)
 						end
 						if rect.TypeFlag == 2 and display_properties then
-							draw.text("Full Strike Inv", finalPosX, finalPosY + (finalSclY / 2) - 10, 0xFFFFFF00)
+							draw.text("Full Strike Inv", finalPosX, finalPosY + (finalSclY / 2) - 10, 0xFFFFFFFF)
 						end
 						if rect.Immune == 4 and display_properties then
-							draw.text("Air Strike Inv", finalPosX, finalPosY + (finalSclY / 2) - 20, 0xFFFFFF00)
+							draw.text("Air Strike Inv", finalPosX, finalPosY + (finalSclY / 2) - 20, 0xFFFFFFFF)
 						end
 						if rect.Immune == 11 and display_properties then
-							draw.text("Ground Strike Inv", finalPosX, finalPosY + (finalSclY / 2) - 30, 0xFFFFFF00)
+							draw.text("Ground Strike Inv", finalPosX, finalPosY + (finalSclY / 2) - 30, 0xFFFFFFFF)
 						end
 					end
 				-- Any remaining rectangles are drawn as a grab box
 				-- This includes UniqueBoxes (e.g., Guile 214P), as there is currently no known way to delineate the two
 				elseif display_throwhurtboxes then
 					draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0000)
-					draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x60FF0000)
+					draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x60FF0000)					
 				end
 			end
 		end
