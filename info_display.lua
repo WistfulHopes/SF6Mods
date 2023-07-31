@@ -120,6 +120,7 @@ re.on_frame(function()
 		p1.hitstun = cPlayer[0].damage_time
 		p1.blockstun = cPlayer[0].guard_time
         p1.stance = cPlayer[0].pose_st
+		p1.throw_invuln = cPlayer[0].catch_muteki
         p1.juggle = cPlayer[0].combo_dm_air
         p1.drive = cPlayer[0].focus_new
         p1.drive_cooldown = cPlayer[0].focus_wait
@@ -143,6 +144,7 @@ re.on_frame(function()
 		p2.hitstun = cPlayer[1].damage_time
 		p2.blockstun = cPlayer[1].guard_time
         p2.stance = cPlayer[1].pose_st
+		p2.throw_invuln = cPlayer[1].catch_muteki
         p2.juggle = cPlayer[1].combo_dm_air
         p2.drive = cPlayer[1].focus_new
         p2.drive_cooldown = cPlayer[1].focus_wait
@@ -170,6 +172,7 @@ re.on_frame(function()
 					else
 						imgui.text("Stance: Jumping")
 					end
+					imgui.text("Throw Protection: " .. p1.throw_invuln)
 					imgui.text("Current HP: " .. p1.current_HP)
 					imgui.text("HP Cap: " .. p1.HP_cap)
 					imgui.text("HP Regen Cooldown: " .. p1.HP_cooldown)
@@ -235,6 +238,7 @@ re.on_frame(function()
 					else
 						imgui.text("Stance: Jumping")
 					end
+					imgui.text("Throw Protection: " .. p2.throw_invuln)
 					imgui.text("Current HP: " .. p2.current_HP)
 					imgui.text("HP Cap: " .. p2.HP_cap)
 					imgui.text("HP Regen Cooldown: " .. p2.HP_cooldown)

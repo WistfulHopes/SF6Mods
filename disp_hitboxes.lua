@@ -4,6 +4,7 @@ local display_pushboxes = true
 local display_throwboxes = true
 local display_throwhurtboxes = true
 local display_proximityboxes = true
+local display_uniqueboxes = true
 local display_properties = true
 local display_position = true
 local hide_p2 = false
@@ -164,11 +165,14 @@ local draw_boxes = function ( work, actParam )
 							draw.text("Ground Strike Inv", finalPosX, finalPosY + (finalSclY / 2) - 30, 0xFFFFFFFF)
 						end
 					end
+				-- UniqueBoxes have a special field called KeyData
+				elseif rect:get_field("KeyData") ~= nil and display_uniqueboxes then
+					draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFEEFF00)
+					draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x60EEFF00)
 				-- Any remaining rectangles are drawn as a grab box
-				-- This includes UniqueBoxes (e.g., Guile 214P), as there is currently no known way to delineate the two
 				elseif display_throwhurtboxes then
 					draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0000)
-					draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x60FF0000)					
+					draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x60FF0000)
 				end
 			end
 		end
@@ -183,6 +187,7 @@ re.on_draw_ui(function()
         changed, display_throwboxes = imgui.checkbox("Display Throw Boxes", display_throwboxes)
         changed, display_throwhurtboxes = imgui.checkbox("Display Throw Hurtboxes", display_throwhurtboxes)
         changed, display_proximityboxes = imgui.checkbox("Display Proximity Boxes", display_proximityboxes)
+		changed, display_uniqueboxes = imgui.checkbox("Display Unique Boxes", display_uniqueboxes)
 		changed, display_properties = imgui.checkbox("Display Properties", display_properties)
 		changed, display_position = imgui.checkbox("Display Position", display_position)
         changed, hide_p2 = imgui.checkbox("Hide P2 Boxes", hide_p2)
@@ -197,7 +202,7 @@ re.on_frame(function()
         local cWork = sWork.Global_work
         for i, obj in pairs(cWork) do
             local actParam = obj.mpActParam
-            if actParam then
+            if actParam and not obj:get_IsR0Die() then
                 draw_boxes(obj, actParam)
             end
         end
