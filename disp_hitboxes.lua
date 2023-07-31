@@ -170,7 +170,7 @@ local draw_boxes = function ( work, actParam )
 					draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFEEFF00)
 					draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x60EEFF00)
 				-- Any remaining rectangles are drawn as a grab box
-				elseif display_throwhurtboxes then
+				elseif rect:get_field("KeyData") == nil and display_throwhurtboxes then
 					draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0000)
 					draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x60FF0000)
 				end
