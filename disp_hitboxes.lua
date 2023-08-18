@@ -204,6 +204,10 @@ re.on_frame(function()
             local actParam = obj.mpActParam
             if actParam and not obj:get_IsR0Die() then
                 draw_boxes(obj, actParam)
+				local objPos = draw.world_to_screen(Vector3f.new(obj.pos.x.v / 6553600.0, obj.pos.y.v / 6553600.0, 0))
+					if objPos and display_position then
+					draw.filled_circle(objPos.x, objPos.y, 10, 0xFFFFFFFF, 10);
+				end
             end
         end
         local sPlayer = gBattle:get_field("Player"):get_data(nil)
