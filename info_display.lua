@@ -46,6 +46,17 @@ local abs = function(num)
 	end
 end
 
+local function read_sfix(sfix_obj)
+    if sfix_obj.w then
+        return Vector4f.new(tonumber(sfix_obj.x:call("ToString()")), tonumber(sfix_obj.y:call("ToString()")), tonumber(sfix_obj.z:call("ToString()")), tonumber(sfix_obj.w:call("ToString()")))
+    elseif sfix_obj.z then
+        return Vector3f.new(tonumber(sfix_obj.x:call("ToString()")), tonumber(sfix_obj.y:call("ToString()")), tonumber(sfix_obj.z:call("ToString()")))
+    elseif sfix_obj.y then
+        return Vector2f.new(tonumber(sfix_obj.x:call("ToString()")), tonumber(sfix_obj.y:call("ToString()")))
+    end
+    return tonumber(sfix_obj:call("ToString()"))
+end
+
 local get_hitbox_range = function ( player, actParam, list )
 	local facingRight = bitand(player.BitValue, 128) == 128
 	local maxHitboxEdgeX = nil
@@ -81,7 +92,9 @@ local get_hitbox_range = function ( player, actParam, list )
 		end
 		if maxHitboxEdgeX ~= nil then
 			local playerPosX = player.pos.x.v / 6553600.0
-			local playerStartPosX = player.start_pos.x.v / 6553600.0
+			-- Replace start_pos because it can fail to track the actual starting location of an action (e.g., DJ 2MK)
+			-- local playerStartPosX = player.start_pos.x.v / 6553600.0
+			local playerStartPosX = player.act_root.x.v / 6553600.0
             list.absolute_range = abs(maxHitboxEdgeX - playerStartPosX)
             list.relative_range = abs(maxHitboxEdgeX - playerPosX)
 		end
@@ -110,8 +123,15 @@ re.on_frame(function()
 		-- Fireball
 		local sWork = gBattle:get_field("Work"):get_data(nil)
 		local cWork = sWork.Global_work
+		-- Action States
+		local p1Engine = gBattle:get_field("Rollback"):get_data():GetLatestEngine().ActEngines[0]._Parent._Engine
+		local p2Engine = gBattle:get_field("Rollback"):get_data():GetLatestEngine().ActEngines[1]._Parent._Engine
 		
-		p1.mActionId = cPlayer[0].mActionId
+		-- p1.mActionId = cPlayer[0].mActionId
+		p1.mActionId = p1Engine:get_ActionID()
+		p1.mActionFrame = p1Engine:get_ActionFrame()
+		p1.mEndFrame = p1Engine:get_ActionFrameNum()
+		p1.mMarginFrame = p1Engine:get_MarginFrame()
 		p1.HP_cap = cPlayer[0].vital_old
 		p1.current_HP = cPlayer[0].vital_new
 		p1.HP_cooldown = cPlayer[0].healing_wait
@@ -121,6 +141,7 @@ re.on_frame(function()
 		p1.blockstun = cPlayer[0].guard_time
         p1.stance = cPlayer[0].pose_st
 		p1.throw_invuln = cPlayer[0].catch_muteki
+		p1.full_invuln = cPlayer[0].muteki_time
         p1.juggle = cPlayer[0].combo_dm_air
         p1.drive = cPlayer[0].focus_new
         p1.drive_cooldown = cPlayer[0].focus_wait
@@ -136,6 +157,10 @@ re.on_frame(function()
 		p1.pushback = cPlayer[0].vector_zuri.speed.v / 6553600.0
 		
 		p2.mActionId = cPlayer[1].mActionId
+		p2.mActionId = p2Engine:get_ActionID()
+		p2.mActionFrame = p2Engine:get_ActionFrame()
+		p2.mEndFrame = p2Engine:get_ActionFrameNum()
+		p2.mMarginFrame = p2Engine:get_MarginFrame()
 		p2.HP_cap = cPlayer[1].vital_old
 		p2.current_HP = cPlayer[1].vital_new
 		p2.HP_cooldown = cPlayer[1].healing_wait
@@ -145,6 +170,7 @@ re.on_frame(function()
 		p2.blockstun = cPlayer[1].guard_time
         p2.stance = cPlayer[1].pose_st
 		p2.throw_invuln = cPlayer[1].catch_muteki
+		p2.full_invuln = cPlayer[1].muteki_time
         p2.juggle = cPlayer[1].combo_dm_air
         p2.drive = cPlayer[1].focus_new
         p2.drive_cooldown = cPlayer[1].focus_wait
@@ -159,12 +185,14 @@ re.on_frame(function()
         p2.aclY = cPlayer[1].alpha.y.v / 6553600.0
 		p2.pushback = cPlayer[1].vector_zuri.speed.v / 6553600.0
 
+
 		if display_player_info then
 			imgui.begin_window("Player Data", true, 0)
 			-- Player 1 Info
 			if imgui.tree_node("P1") then
 				if imgui.tree_node("General Info") then
 					imgui.text("Action ID: " .. p1.mActionId)
+					imgui.text("Action Frame: " .. math.floor(read_sfix(p1.mActionFrame)) .. " / " .. math.floor(read_sfix(p1.mMarginFrame)) .. " (" .. math.floor(read_sfix(p1.mEndFrame)) .. ")")
 					if p1.stance == 0 then
 						imgui.text("Stance: Standing")
 					elseif p1.stance == 1 then
@@ -172,7 +200,8 @@ re.on_frame(function()
 					else
 						imgui.text("Stance: Jumping")
 					end
-					imgui.text("Throw Protection: " .. p1.throw_invuln)
+					imgui.text("Throw Protection Timer: " .. p1.throw_invuln)
+					imgui.text("Intangible Timer: " .. p1.full_invuln)
 					imgui.text("Current HP: " .. p1.current_HP)
 					imgui.text("HP Cap: " .. p1.HP_cap)
 					imgui.text("HP Regen Cooldown: " .. p1.HP_cooldown)
@@ -231,6 +260,7 @@ re.on_frame(function()
 			if imgui.tree_node("P2") then
 				if imgui.tree_node("General Info") then
 					imgui.text("Action ID: " .. p2.mActionId)
+					imgui.text("Action Frame: " .. math.floor(read_sfix(p1.mActionFrame)) .. " / " .. math.floor(read_sfix(p1.mMarginFrame)) .. " (" .. math.floor(read_sfix(p1.mEndFrame)) .. ")")
 					if p2.stance == 0 then
 						imgui.text("Stance: Standing")
 					elseif p2.stance == 1 then
@@ -238,7 +268,8 @@ re.on_frame(function()
 					else
 						imgui.text("Stance: Jumping")
 					end
-					imgui.text("Throw Protection: " .. p2.throw_invuln)
+					imgui.text("Throw Protection Timer: " .. p2.throw_invuln)
+					imgui.text("Intangible Timer: " .. p2.full_invuln)
 					imgui.text("Current HP: " .. p2.current_HP)
 					imgui.text("HP Cap: " .. p2.HP_cap)
 					imgui.text("HP Regen Cooldown: " .. p2.HP_cooldown)
@@ -334,5 +365,5 @@ re.on_frame(function()
 			
 			imgui.end_window()
 		end
-    end
+    end 
 end)
