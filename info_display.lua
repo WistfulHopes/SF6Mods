@@ -128,7 +128,7 @@ re.on_frame(function()
 		local p1Engine = gBattle:get_field("Rollback"):get_data():GetLatestEngine().ActEngines[0]._Parent._Engine
 		local p2Engine = gBattle:get_field("Rollback"):get_data():GetLatestEngine().ActEngines[1]._Parent._Engine
 		
-		-- p1.mActionId = cPlayer[0].mActionId
+		-- p1.mActionId = cPlayer[0].mActionId (outdated)
 		p1.mActionId = p1Engine:get_ActionID()
 		p1.mActionFrame = p1Engine:get_ActionFrame()
 		p1.mEndFrame = p1Engine:get_ActionFrameNum()
@@ -137,7 +137,7 @@ re.on_frame(function()
 		p1.current_HP = cPlayer[0].vital_new
 		p1.HP_cooldown = cPlayer[0].healing_wait
         p1.dir = bitand(cPlayer[0].BitValue, 128) == 128
-        p1.hitstop = cPlayer[0].hit_stop
+        p1.curr_hitstop = cPlayer[0].hit_stop
 		p1.hitstun = cPlayer[0].damage_time
 		p1.blockstun = cPlayer[0].guard_time
         p1.stance = cPlayer[0].pose_st
@@ -158,6 +158,7 @@ re.on_frame(function()
         p1.aclY = cPlayer[0].alpha.y.v / 6553600.0
 		p1.pushback = cPlayer[0].vector_zuri.speed.v / 6553600.0
 		
+		-- p2.mActionId = cPlayer[1].mActionId
 		p2.mActionId = p2Engine:get_ActionID()
 		p2.mActionFrame = p2Engine:get_ActionFrame()
 		p2.mEndFrame = p2Engine:get_ActionFrameNum()
@@ -166,7 +167,7 @@ re.on_frame(function()
 		p2.current_HP = cPlayer[1].vital_new
 		p2.HP_cooldown = cPlayer[1].healing_wait
         p2.dir = bitand(cPlayer[1].BitValue, 128) == 128
-        p2.hitstop = cPlayer[1].hit_stop
+        p2.curr_hitstop = cPlayer[1].hit_stop
 		p2.hitstun = cPlayer[1].damage_time
 		p2.blockstun = cPlayer[1].guard_time
         p2.stance = cPlayer[1].pose_st
@@ -186,6 +187,25 @@ re.on_frame(function()
         p2.aclX = cPlayer[1].alpha.x.v / 6553600.0
         p2.aclY = cPlayer[1].alpha.y.v / 6553600.0
 		p2.pushback = cPlayer[1].vector_zuri.speed.v / 6553600.0
+		
+		-- max hitstop tracker
+		if p1.max_hitstop == nil then
+			p1.max_hitstop = 0
+		end
+		if p1.curr_hitstop > p1.max_hitstop then
+			p1.max_hitstop = p1.curr_hitstop
+		elseif p1.curr_hitstop == 0 then
+			p1.max_hitstop = 0
+		end
+
+		if p2.max_hitstop == nil then
+			p2.max_hitstop = 0
+		end
+		if p2.curr_hitstop > p2.max_hitstop then
+			p2.max_hitstop = p2.curr_hitstop
+		elseif p2.curr_hitstop == 0 then
+			p2.max_hitstop = 0
+		end
 
 
 		if display_player_info then
@@ -232,7 +252,7 @@ re.on_frame(function()
 					imgui.tree_pop()
 				end
 				if imgui.tree_node("Attack Info") then
-					imgui.text("Hitstop: " .. p1.hitstop)
+					imgui.text("Hitstop: " .. p1.curr_hitstop .. " / " .. p1.max_hitstop)
 					imgui.text("Hitstun: " .. p1.hitstun)
 					imgui.text("Blockstun: " .. p1.blockstun)
 					imgui.text("Juggle Counter: " .. p2.juggle)
@@ -301,7 +321,7 @@ re.on_frame(function()
 					imgui.tree_pop()
 				end
 				if imgui.tree_node("Attack Info") then
-					imgui.text("Hitstop: " .. p2.hitstop)
+					imgui.text("Hitstop: " .. p2.curr_hitstop .. " / " .. p2.max_hitstop)
 					imgui.text("Hitstun: " .. p2.hitstun)
 					imgui.text("Blockstun: " .. p2.blockstun)
 					imgui.text("Juggle Counter: " .. p1.juggle)
