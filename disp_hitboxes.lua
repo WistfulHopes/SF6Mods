@@ -7,6 +7,7 @@ local display_proximityboxes = true
 local display_uniqueboxes = true
 local display_properties = true
 local display_position = true
+local display_clashbox = true
 local hide_p2 = false
 local changed
 local gBattle
@@ -124,6 +125,10 @@ local draw_boxes = function ( work, actParam )
 								draw.text("JuggleOnly", finalPosX, finalPosY + (finalSclY / 2) - 40, 0xFFFFFFFF)
 							end
 						end
+					-- Projectile Clash boxes have a GuardBit of 0 (while most other boxes have either 7 or some random, non-zero, positive integer)
+					elseif rect.GuardBit == 0 and display_clashbox then
+						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF3891E6)
+						draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x403891E6)
 					-- Any remaining boxes are drawn as proximity boxes
 					elseif display_proximityboxes then
 						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF5b5b5b)
@@ -187,6 +192,7 @@ re.on_draw_ui(function()
         changed, display_throwboxes = imgui.checkbox("Display Throw Boxes", display_throwboxes)
         changed, display_throwhurtboxes = imgui.checkbox("Display Throw Hurtboxes", display_throwhurtboxes)
         changed, display_proximityboxes = imgui.checkbox("Display Proximity Boxes", display_proximityboxes)
+		changed, display_clashbox = imgui.checkbox("Display Projectile Clash Boxes", display_clashbox)
 		changed, display_uniqueboxes = imgui.checkbox("Display Unique Boxes", display_uniqueboxes)
 		changed, display_properties = imgui.checkbox("Display Properties", display_properties)
 		changed, display_position = imgui.checkbox("Display Position", display_position)
