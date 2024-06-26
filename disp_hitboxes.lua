@@ -285,73 +285,103 @@ local draw_p2_boxes = function ( work, actParam )
 				local finalSclX = (screenTR.x - screenTL.x)
 				local finalSclY = (screenTL.y - screenBL.y)
 				
-				-- If the rectangle has a HitPos field, draw it as a hitbox
+				-- If the rectangle has a HitPos field, it falls under attack boxes
 				if rect:get_field("HitPos") ~= nil then
 					-- TypeFlag > 0 indicates a regular hitbox
 					if rect.TypeFlag > 0 and display_p2_hitboxes then 
 						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF0040C0)
 						draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4D0040C0)
-						-- Display hitbox properties (each at a unique height)
-						-- CondFlag: 524288 (Projectile that can only hit a juggled opponent)
-						-- CondFlag: 262144	(Strike that can ONLY hit a juggled opponent)
-						-- CondFlag: 512	(Can't hit behind the player)
-						-- CondFlag: 256	(Can't hit in front of the player)
-						-- CondFlag: 64		(Can't hit airborne)
-						-- CondFlag: 32		(Can't hit crouching opponents)
+						-- Identify hitbox properties
+						local hitboxExceptions = "Can't Hit "
+						local comboOnly = "Combo "
 						-- CondFlag: 16		(Can't hit standing opponent)
+						-- CondFlag: 32		(Can't hit crouching opponents)
+						-- CondFlag: 64		(Can't hit airborne)
+						-- CondFlag: 256	(Can't hit in front of the player)
+						-- CondFlag: 512	(Can't hit behind the player)
+						-- CondFlag: 262144	(Strike that can only hit a juggled/combo'd opponent)
+						-- CondFlag: 524288 (Projectile that can only hit a juggled/combo'd opponent)
+						if bitand(rect.CondFlag, 16) == 16 then
+							hitboxExceptions = hitboxExceptions .. "Standing, "
+						end
+						if bitand(rect.CondFlag, 32) == 32 then
+							hitboxExceptions = hitboxExceptions .. "Crouching, "
+						end
+						if bitand(rect.CondFlag, 64) == 64 then
+							hitboxExceptions = hitboxExceptions .. "Airborne, "
+						end
+						if bitand(rect.CondFlag, 256) == 256 then
+							hitboxExceptions = hitboxExceptions .. "Forward, "
+						end
+						if bitand(rect.CondFlag, 512) == 512 then
+							hitboxExceptions = hitboxExceptions .. "Backwards, "
+						end	
+						if bitand(rect.CondFlag, 262144) == 262144 then 
+							comboOnly = comboOnly .. "Only"
+						end
+						if bitand(rect.CondFlag, 524288) == 524288 then
+							comboOnly = comboOnly .. "Only"
+						end
 						if display_p2_properties then
-							if bitand(rect.CondFlag, 512) == 512 then
-								draw.text("CantHitBehind", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFFFF)
+							local fullString = ""
+							if string.len(hitboxExceptions) > 10 then
+								-- Remove final commma
+								hitboxExceptions = string.sub(hitboxExceptions, 0, -3)
+								fullString = fullString .. hitboxExceptions .. "\n"
 							end
-							-- CantHitInFront is mutually exclusive with CantHitBehind (in theory), so it doesn't need a unique row height
-							if bitand(rect.CondFlag, 256) == 256 then
-								draw.text("CantHitInFront", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFFFF)
+							if string.len(comboOnly) > 6 then
+								fullString = fullString .. comboOnly .. "\n"
 							end
-							if bitand(rect.CondFlag, 64) == 64 then
-								draw.text("CantHitAir", finalPosX, finalPosY + (finalSclY / 2) - 10, 0xFFFFFFFF)
-							end
-							if bitand(rect.CondFlag, 32) == 32 then
-								draw.text("CantHitCrouch", finalPosX, finalPosY + (finalSclY / 2) - 20, 0xFFFFFFFF)
-							end
-							if bitand(rect.CondFlag, 16) == 16 then
-								draw.text("CantHitStanding", finalPosX, finalPosY + (finalSclY / 2) - 30, 0xFFFFFFFF)
-							end
-							if bitand(rect.CondFlag, 262144) == 262144 then 
-								draw.text("JuggleOnly", finalPosX, finalPosY + (finalSclY / 2) - 40, 0xFFFFFFFF)
-							end
-							if bitand(rect.CondFlag, 524288) == 524288 then 
-								draw.text("JuggleOnly", finalPosX, finalPosY + (finalSclY / 2) - 50, 0xFFFFFFFF)
-							end
+							draw.text(fullString, finalPosX, (finalPosY + finalSclY), 0xFFFFFFFF)
 						end
 					-- Throws almost* universally have a TypeFlag of 0 and a PoseBit > 0 
 					-- Except for JP's command grab projectile which has neither and must be caught with CondFlag of 0x2C0
 					elseif ((rect.TypeFlag == 0 and rect.PoseBit > 0) or rect.CondFlag == 0x2C0) and display_p2_throwboxes then
 						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFD080FF)
 						draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4DD080FF)
-						-- Display throwbox properties (each at a unique height)
+						-- Identify hitbox properties
+						local hitboxExceptions = "Can't Hit "
+						local comboOnly = "Combo "
+						-- CondFlag: 16		(Can't hit standing opponent)
+						-- CondFlag: 32		(Can't hit crouching opponents)
+						-- CondFlag: 64		(Can't hit airborne)
+						-- CondFlag: 256	(Can't hit in front of the player)
+						-- CondFlag: 512	(Can't hit behind the player)
+						-- CondFlag: 262144	(Strike that can only hit a juggled/combo'd opponent)
+						-- CondFlag: 524288 (Projectile that can only hit a juggled/combo'd opponent)
+						if bitand(rect.CondFlag, 16) == 16 then
+							hitboxExceptions = hitboxExceptions .. "Standing, "
+						end
+						if bitand(rect.CondFlag, 32) == 32 then
+							hitboxExceptions = hitboxExceptions .. "Crouching, "
+						end
+						if bitand(rect.CondFlag, 64) == 64 then
+							hitboxExceptions = hitboxExceptions .. "Airborne, "
+						end
+						if bitand(rect.CondFlag, 256) == 256 then
+							hitboxExceptions = hitboxExceptions .. "Forward, "
+						end
+						if bitand(rect.CondFlag, 512) == 512 then
+							hitboxExceptions = hitboxExceptions .. "Backwards, "
+						end	
+						if bitand(rect.CondFlag, 262144) == 262144 then 
+							comboOnly = comboOnly .. "Only"
+						end
+						if bitand(rect.CondFlag, 524288) == 524288 then
+							comboOnly = comboOnly .. "Only"
+						end
+						-- Display hitbox properties
 						if display_p2_properties then
-							if bitand(rect.CondFlag, 512) == 512 then
-								draw.text("CantHitBehind", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFFFF)
+							local fullString = ""
+							if string.len(hitboxExceptions) > 10 then
+								-- Remove final commma
+								hitboxExceptions = string.sub(hitboxExceptions, 0, -3)
+								fullString = fullString .. hitboxExceptions .. "\n"
 							end
-							-- CantHitInFront is mutually exclusive with CantHitBehind (in theory), so it doesn't need a unique row height
-							if bitand(rect.CondFlag, 256) == 256 then
-								draw.text("CantHitInFront", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFFFF)
+							if string.len(comboOnly) > 6 then
+								fullString = fullString .. comboOnly .. "\n"
 							end
-							if bitand(rect.CondFlag, 64) == 64 then
-								draw.text("CantHitAir", finalPosX, finalPosY + (finalSclY / 2) - 10, 0xFFFFFFFF)
-							end
-							if bitand(rect.CondFlag, 32) == 32 then
-								draw.text("CantHitCrouch", finalPosX, finalPosY + (finalSclY / 2) - 20, 0xFFFFFFFF)
-							end
-							if bitand(rect.CondFlag, 16) == 16 then
-								draw.text("CantHitStanding", finalPosX, finalPosY + (finalSclY / 2) - 30, 0xFFFFFFFF)
-							end
-							if bitand(rect.CondFlag, 262144) == 262144 then 
-								draw.text("JuggleOnly", finalPosX, finalPosY + (finalSclY / 2) - 40, 0xFFFFFFFF)
-							end
-							if bitand(rect.CondFlag, 524288) == 524288 then 
-								draw.text("JuggleOnly", finalPosX, finalPosY + (finalSclY / 2) - 50, 0xFFFFFFFF)
-							end
+							draw.text(fullString, finalPosX, (finalPosY + finalSclY), 0xFFFFFFFF)
 						end
 					-- Projectile Clash boxes have a GuardBit of 0 (while most other boxes have either 7 or some random, non-zero, positive integer)
 					elseif rect.GuardBit == 0 and display_p2_clashbox then
@@ -368,7 +398,7 @@ local draw_p2_boxes = function ( work, actParam )
 						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF00FFFF)
 						draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4000FFFF)
 					end
-				-- If the rectangle has a HitNo field, and is not already a hitbox, draw a hurtbox
+				-- If the rectangle has a HitNo field, the box falls under hurt boxes
 				elseif rect:get_field("HitNo") ~= nil then
 					if display_p2_hurtboxes then
 						-- Armor (Type: 1) & Parry (Type: 2) Boxes
@@ -380,35 +410,52 @@ local draw_p2_boxes = function ( work, actParam )
 							draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF00FF00)
 							draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4000FF00)
 						end
-						-- Display HurtboxType as text (each at a unique height)
+						-- Identify HurtboxType as text (each at a unique height)
+						local hurtInvuln = ""
 						-- TypeFlag:	1	(Projectile Invuln)
 						-- TypeFlag:	2	(Strike Invuln)
-						-- Display Hurtbox Immunities as text (each at a unique height)
+						if rect.TypeFlag == 1 then
+							hurtInvuln = hurtInvuln .. "Projectile"
+						end
+						if rect.TypeFlag == 2 then
+							hurtInvuln = hurtInvuln .. "Strike"
+						end
+						-- Identify Hurtbox Immunities as text (each at a unique height)
+						local hurtImmune = ""
 						-- Immune:		1	(Stand Attack Intangibility)
 						-- Immune:		2	(Crouch Attack Intangibility)
 						-- Immune:		4	(Air Attack Intangibility)
 						-- Immune:		64	(Cross-Up Attack Intangibility)
 						-- Immune:		128	(Reverse Hit Intangibility)
-						if rect.TypeFlag == 1 and display_p1_properties then
-							draw.text("Projectile Inv", finalPosX, finalPosY + (finalSclY / 2), 0xFFFFFFFF)
+						if bitand(rect.Immune, 1) == 1 then
+							hurtImmune = hurtImmune .. "Stand, "
 						end
-						if rect.TypeFlag == 2 and display_p1_properties then
-							draw.text("Full Strike Inv", finalPosX, finalPosY + (finalSclY / 2) - 10, 0xFFFFFFFF)
+						if bitand(rect.Immune, 2) == 2 then
+							hurtImmune = hurtImmune .. "Crouch, "
 						end
-						if bitand(rect.Immune, 1) == 1 and display_p1_properties then
-							draw.text("Stand Attack Intangibility", finalPosX, finalPosY + (finalSclY / 2) - 20, 0xFFFFFFFF)
+						if bitand(rect.Immune, 4) == 4 then
+							hurtImmune = hurtImmune .. "Air, "
 						end
-						if bitand(rect.Immune, 2) == 2 and display_p1_properties then
-							draw.text("Crouch Attack Intangibility", finalPosX, finalPosY + (finalSclY / 2) - 30, 0xFFFFFFFF)
+						if bitand(rect.Immune, 64) == 64 then
+							hurtImmune = hurtImmune .. "Behind, "
 						end
-						if bitand(rect.Immune, 4) == 4 and display_p1_properties then
-							draw.text("Air Attack Intangibility", finalPosX, finalPosY + (finalSclY / 2) - 40, 0xFFFFFFFF)
+						if bitand(rect.Immune, 128) == 128 then
+							hurtImmune = hurtImmune .. "Reverse, "
 						end
-						if bitand(rect.Immune, 64) == 64 and display_p1_properties then
-							draw.text("Cross-Up Attack Intangibility", finalPosX, finalPosY + (finalSclY / 2) - 40, 0xFFFFFFFF)
-						end
-						if bitand(rect.Immune, 128) == 128 and display_p1_properties then
-							draw.text("Reverse Hit Intangibility", finalPosX, finalPosY + (finalSclY / 2) - 40, 0xFFFFFFFF)
+						-- Display hurtbox properties
+						if display_p2_properties then
+							local fullString = ""
+							if string.len(hurtInvuln) > 0 then
+								-- Remove final commma
+								hurtInvuln = hurtInvuln .. " Invulnerable"
+								fullString = fullString .. hurtInvuln .. "\n"
+							end
+							if string.len(hurtImmune) > 0 then
+								hurtImmune = string.sub(hurtImmune, 0, -3)
+								hurtImmune = hurtImmune .. " Attack Intangible"
+								fullString = fullString .. hurtImmune .. "\n"
+							end
+							draw.text(fullString, finalPosX, (finalPosY + finalSclY), 0xFFFFFFFF)
 						end
 					end
 				-- UniqueBoxes have a special field called KeyData
@@ -424,6 +471,7 @@ local draw_p2_boxes = function ( work, actParam )
 		end
 	end
 end
+
 
 re.on_draw_ui(function()
     if imgui.tree_node("Hitbox Viewer") then
