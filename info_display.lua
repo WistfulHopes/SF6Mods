@@ -1,4 +1,16 @@
-local gBattle
+local gBattle = sdk.find_type_definition("gBattle")
+local sPlayer = gBattle:get_field("Player"):get_data(nil)
+local cPlayer = sPlayer.mcPlayer
+local BattleTeam = gBattle:get_field("Team"):get_data(nil)
+local cTeam = BattleTeam.mcTeam
+-- Charge Info
+local storageData = gBattle:get_field("Command"):get_data(nil).StorageData
+local p1ChargeInfo = storageData.UserEngines[0].m_charge_infos
+local p2ChargeInfo = storageData.UserEngines[1].m_charge_infos
+-- Fireball
+local sWork = gBattle:get_field("Work"):get_data(nil)
+local cWork = sWork.Global_work
+
 local p1 = {}
 local p2 = {}
 local changed
@@ -71,10 +83,10 @@ local get_hitbox_range = function ( player, actParam, list )
 		local col = actParam.Collision
 		   for j, rect in reversePairs(col.Infos._items) do
 			if rect ~= nil then
-				local posX = rect.OffsetX.v / 6553600.0
-				local posY = rect.OffsetY.v / 6553600.0
-				local sclX = rect.SizeX.v / 6553600.0 * 2
-				local sclY = rect.SizeY.v / 6553600.0 * 2
+				local posX = rect.OffsetX.v / 65536.0
+				local posY = rect.OffsetY.v / 65536.0
+				local sclX = rect.SizeX.v / 65536.0 * 2
+				local sclY = rect.SizeY.v / 65536.0 * 2
 				if rect:get_field("HitPos") ~= nil then
 					local hitbox_X
 					if rect.TypeFlag > 0 or (rect.TypeFlag == 0 and rect.PoseBit > 0) then
@@ -98,10 +110,10 @@ local get_hitbox_range = function ( player, actParam, list )
 			end
 		end
 		if maxHitboxEdgeX ~= nil then
-			local playerPosX = player.pos.x.v / 6553600.0
+			local playerPosX = player.pos.x.v / 65536.0
 			-- Replace start_pos because it can fail to track the actual starting location of an action (e.g., DJ 2MK)
-			-- local playerStartPosX = player.start_pos.x.v / 6553600.0
-			local playerStartPosX = player.act_root.x.v / 6553600.0
+			-- local playerStartPosX = player.start_pos.x.v / 65536.0
+			local playerStartPosX = player.act_root.x.v / 65536.0
             list.absolute_range = abs(maxHitboxEdgeX - playerStartPosX)
             list.relative_range = abs(maxHitboxEdgeX - playerPosX)
 		end
@@ -117,45 +129,23 @@ re.on_draw_ui(function()
 end)
 
 re.on_frame(function()
-    gBattle = sdk.find_type_definition("gBattle")
-    if gBattle then
-        local sPlayer = gBattle:get_field("Player"):get_data(nil)
-        local cPlayer = sPlayer.mcPlayer
-        local BattleTeam = gBattle:get_field("Team"):get_data(nil)
-        local cTeam = BattleTeam.mcTeam
-		-- Charge Info
-		local storageData = gBattle:get_field("Command"):get_data(nil).StorageData
-		local p1ChargeInfo = storageData.UserEngines[0].m_charge_infos
-		local p2ChargeInfo = storageData.UserEngines[1].m_charge_infos
-		-- Fireball
-		local sWork = gBattle:get_field("Work"):get_data(nil)
-		local cWork = sWork.Global_work
-		-- ActionIDs
-		if sPlayer.move_ctr > 0 then
-			-- ActEngine
-			local p1Engine = cPlayer[0].mpActParam.ActionPart._Engine
-			local p2Engine = cPlayer[1].mpActParam.ActionPart._Engine
-			-- P1 ActID, Current Frame, Final Frame, IASA Frame
-			p1.mActionId = p1Engine:get_ActionID()
-			p1.mActionFrame = p1Engine:get_ActionFrame()
-			p1.mEndFrame = p1Engine:get_ActionFrameNum()
-			p1.mMarginFrame = p1Engine:get_MarginFrame()
-			-- P2 ActID, Current Frame, Final Frame, IASA Frame
-			p2.mActionId = p2Engine:get_ActionID()
-			p2.mActionFrame = p2Engine:get_ActionFrame()
-			p2.mEndFrame = p2Engine:get_ActionFrameNum()
-			p2.mMarginFrame = p2Engine:get_MarginFrame()
-		end
+    if sPlayer.prev_no_push_bit ~= 0 then
+		-- Action Engine
+		local p1Engine = cPlayer[0].mpActParam.ActionPart._Engine
+		local p2Engine = cPlayer[1].mpActParam.ActionPart._Engine
+		-- P1 ActID, Current Frame, Final Frame, IASA Frame
+		p1.mActionId = p1Engine:get_ActionID()
+		p1.mActionFrame = p1Engine:get_ActionFrame()
+		p1.mEndFrame = p1Engine:get_ActionFrameNum()
+		p1.mMarginFrame = p1Engine:get_MarginFrame()
+		-- P2 ActID, Current Frame, Final Frame, IASA Frame
+		p2.mActionId = p2Engine:get_ActionID()
+		p2.mActionFrame = p2Engine:get_ActionFrame()
+		p2.mEndFrame = p2Engine:get_ActionFrameNum()
+		p2.mMarginFrame = p2Engine:get_MarginFrame()
 		-- HitDT
 		local p1HitDT = cPlayer[1].pDmgHitDT
 		local p2HitDT = cPlayer[0].pDmgHitDT
-		
-		--[[ DEPRECATED (improved, direct method found)
-		-- local p1Engine = gBattle:get_field("Rollback"):get_data():GetLatestEngine().ActEngines[0]._Parent._Engine
-		-- local p2Engine = gBattle:get_field("Rollback"):get_data():GetLatestEngine().ActEngines[1]._Parent._Engine
-		-- p1.mActionId = cPlayer[0].mActionId
-		-- p2.mActionId = cPlayer[1].mActionId
-		--]]
 		
 		-- P1 Data
 		p1.HP_cap = cPlayer[0].heal_new
@@ -175,16 +165,17 @@ re.on_frame(function()
         p1.drive_cooldown = cPlayer[0].focus_wait
         p1.super = cTeam[0].mSuperGauge
 		p1.buff = cPlayer[0].style_timer
-		p1.poison_timer = cPlayer[0].damage_cond.timer
+		p1.debuff_timer = cPlayer[0].damage_cond.timer
 		p1.chargeInfo = p1ChargeInfo
-		p1.posX = cPlayer[0].pos.x.v / 6553600.0
-        p1.posY = cPlayer[0].pos.y.v / 6553600.0
-        p1.spdX = cPlayer[0].speed.x.v / 6553600.0
-        p1.spdY = cPlayer[0].speed.y.v / 6553600.0
-        p1.aclX = cPlayer[0].alpha.x.v / 6553600.0
-        p1.aclY = cPlayer[0].alpha.y.v / 6553600.0
-		p1.pushback = cPlayer[0].vector_zuri.speed.v / 6553600.0
-		p1.self_pushback = cPlayer[0].vs_vec_zuri.zuri.speed.v / 6553600.0
+		p1.posX = cPlayer[0].pos.x.v / 65536.0
+        p1.posY = cPlayer[0].pos.y.v / 65536.0
+        p1.spdX = cPlayer[0].speed.x.v / 65536.0
+        p1.spdY = cPlayer[0].speed.y.v / 65536.0
+        p1.aclX = cPlayer[0].alpha.x.v / 65536.0
+        p1.aclY = cPlayer[0].alpha.y.v / 65536.0
+		p1.pushback = cPlayer[0].vector_zuri.speed.v / 65536.0
+		p1.self_pushback = cPlayer[0].vs_vec_zuri.zuri.speed.v / 65536.0
+		p1.gap = cPlayer[0].vs_distance.v / 65536.0
 		
 		-- P2 Data
 		p2.HP_cap = cPlayer[1].heal_new
@@ -204,36 +195,17 @@ re.on_frame(function()
         p2.drive_cooldown = cPlayer[1].focus_wait
         p2.super = cTeam[1].mSuperGauge
 		p2.buff = cPlayer[1].style_timer
-		p2.poison_timer = cPlayer[1].damage_cond.timer
+		p2.debuff_timer = cPlayer[1].damage_cond.timer
 		p2.chargeInfo = p2ChargeInfo
-		p2.posX = cPlayer[1].pos.x.v / 6553600.0
-        p2.posY = cPlayer[1].pos.y.v / 6553600.0
-        p2.spdX = cPlayer[1].speed.x.v / 6553600.0
-        p2.spdY = cPlayer[1].speed.y.v / 6553600.0
-        p2.aclX = cPlayer[1].alpha.x.v / 6553600.0
-        p2.aclY = cPlayer[1].alpha.y.v / 6553600.0
-		p2.pushback = cPlayer[1].vector_zuri.speed.v / 6553600.0
-		p2.self_pushback = cPlayer[1].vs_vec_zuri.zuri.speed.v / 6553600.0
-		
-		--[[ DEPRECATED (found a variable that does the same thing)
-		-- Max hitstop tracker
-		if p1.max_hitstop == nil then
-			p1.max_hitstop = 0
-		end
-		if p1.curr_hitstop > p1.max_hitstop then
-			p1.max_hitstop = p1.curr_hitstop
-		elseif p1.curr_hitstop == 0 then
-			p1.max_hitstop = 0
-		end
-		if p2.max_hitstop == nil then
-			p2.max_hitstop = 0
-		end
-		if p2.curr_hitstop > p2.max_hitstop then
-			p2.max_hitstop = p2.curr_hitstop
-		elseif p2.curr_hitstop == 0 then
-			p2.max_hitstop = 0
-		end
-		--]]
+		p2.posX = cPlayer[1].pos.x.v / 65536.0
+        p2.posY = cPlayer[1].pos.y.v / 65536.0
+        p2.spdX = cPlayer[1].speed.x.v / 65536.0
+        p2.spdY = cPlayer[1].speed.y.v / 65536.0
+        p2.aclX = cPlayer[1].alpha.x.v / 65536.0
+        p2.aclY = cPlayer[1].alpha.y.v / 65536.0
+		p2.pushback = cPlayer[1].vector_zuri.speed.v / 65536.0
+		p2.self_pushback = cPlayer[1].vs_vec_zuri.zuri.speed.v / 65536.0
+		p2.gap = cPlayer[1].vs_distance.v / 65536.0
 		
 		-- Max blockstun tracker
 		if p1.max_blockstun == nil then
@@ -266,7 +238,7 @@ re.on_frame(function()
 					imgui.multi_color("Drive Cooldown:", p1.drive_cooldown)
 					imgui.multi_color("Super Gauge:", p1.super)
 					imgui.multi_color("Buff Duration:", p1.buff)
-					imgui.multi_color("Poison Duration:", p1.poison_timer)
+					imgui.multi_color("Debuff Duration:", p1.debuff_timer)
 
 					imgui.tree_pop()
 				end
@@ -302,6 +274,7 @@ re.on_frame(function()
 					imgui.multi_color("Acceleration Y:", p1.aclY)
 					imgui.multi_color("Pushback:", p1.pushback)
 					imgui.multi_color("Self Pushback:", p1.self_pushback)
+					imgui.multi_color("Distance Between Players:", p1.gap)
 					
 					imgui.tree_pop()
 				end
@@ -360,7 +333,7 @@ re.on_frame(function()
 					imgui.multi_color("Drive Cooldown:", p2.drive_cooldown)
 					imgui.multi_color("Super Gauge:", p2.super)
 					imgui.multi_color("Buff Duration:", p2.buff)
-					imgui.multi_color("Poison Duration:", p2.poison_timer)
+					imgui.multi_color("Debuff Duration:", p2.debuff_timer)
 
 					imgui.tree_pop()
 				end
@@ -396,6 +369,7 @@ re.on_frame(function()
 					imgui.multi_color("Acceleration Y:", p2.aclY)
 					imgui.multi_color("Pushback:", p2.pushback)
 					imgui.multi_color("Self Pushback:", p2.self_pushback)
+					imgui.multi_color("Distance Between Players:", p2.gap)
 					
 					imgui.tree_pop()
 				end
@@ -458,10 +432,11 @@ re.on_frame(function()
 						if imgui.tree_node("Projectile " .. i) then
 							imgui.multi_color("Action ID:", obj.mActionId)
 							imgui.multi_color("Action Frame:", math.floor(read_sfix(objEngine:get_ActionFrame())) .. " / " .. math.floor(read_sfix(objEngine:get_MarginFrame())) .. " (" .. math.floor(read_sfix(objEngine:get_ActionFrameNum())) .. ")")
-							imgui.multi_color("Position X:", obj.pos.x.v / 6553600.0)
-							imgui.multi_color("Position Y:", obj.pos.y.v / 6553600.0)
-							imgui.multi_color("Speed X:", obj.speed.x.v / 6553600.0)
-							imgui.multi_color("Speed Y:", obj.speed.y.v / 6553600.0)
+							imgui.multi_color("Position X:", obj.pos.x.v / 65536.0)
+							imgui.multi_color("Position Y:", obj.pos.y.v / 65536.0)
+							imgui.multi_color("Speed X:", obj.speed.x.v / 65536.0)
+							imgui.multi_color("Speed Y:", obj.speed.y.v / 65536.0)
+							imgui.multi_color("Current Hitstop:", obj.hit_stop .. " / " .. obj.hit_stop_org)
 							
 							imgui.tree_pop()
 						end
@@ -478,10 +453,11 @@ re.on_frame(function()
 						if imgui.tree_node("Projectile " .. i) then
 							imgui.multi_color("Action ID:", obj.mActionId)
 							imgui.multi_color("Action Frame:", math.floor(read_sfix(objEngine:get_ActionFrame())) .. " / " .. math.floor(read_sfix(objEngine:get_MarginFrame())) .. " (" .. math.floor(read_sfix(objEngine:get_ActionFrameNum())) .. ")")
-							imgui.multi_color("Position X:", obj.pos.x.v / 6553600.0)
-							imgui.multi_color("Position Y:", obj.pos.y.v / 6553600.0)
-							imgui.multi_color("Speed X:", obj.speed.x.v / 6553600.0)
-							imgui.multi_color("Speed Y:", obj.speed.y.v / 6553600.0)
+							imgui.multi_color("Position X:", obj.pos.x.v / 65536.0)
+							imgui.multi_color("Position Y:", obj.pos.y.v / 65536.0)
+							imgui.multi_color("Speed X:", obj.speed.x.v / 65536.0)
+							imgui.multi_color("Speed Y:", obj.speed.y.v / 65536.0)
+							imgui.multi_color("Current Hitstop:", obj.hit_stop .. " / " .. obj.hit_stop_org)
 							
 							imgui.tree_pop()
 						end
