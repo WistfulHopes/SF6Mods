@@ -188,74 +188,77 @@ local draw_p1_boxes = function ( work, actParam )
 						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF00FFFF)
 						draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4000FFFF)
 					end
-				-- If the rectangle has a HitNo field, the box falls under hurt boxes
+				-- If the rectangle has a HitNo field, the box falls under hurt boxes or throw hurt box
 				elseif rect:get_field("HitNo") ~= nil then
-					if display_p1_hurtboxes then
-						-- Armor (Type: 1) & Parry (Type: 2) Boxes
-						if rect.Type == 2 or rect.Type == 1 then			
-							draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0080)
-							draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x40FF0080)
-						-- All other hurtboxes
-						else
-							draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF00FF00)
-							draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4000FF00)
-						end
-						-- Identify HurtboxType as text (each at a unique height)
-						local hurtInvuln = ""
-						-- TypeFlag:	1	(Projectile Invuln)
-						-- TypeFlag:	2	(Strike Invuln)
-						if rect.TypeFlag == 1 then
-							hurtInvuln = hurtInvuln .. "Projectile"
-						end
-						if rect.TypeFlag == 2 then
-							hurtInvuln = hurtInvuln .. "Strike"
-						end
-						-- Identify Hurtbox Immunities as text (each at a unique height)
-						local hurtImmune = ""
-						-- Immune:		1	(Stand Attack Intangibility)
-						-- Immune:		2	(Crouch Attack Intangibility)
-						-- Immune:		4	(Air Attack Intangibility)
-						-- Immune:		64	(Cross-Up Attack Intangibility)
-						-- Immune:		128	(Reverse Hit Intangibility)
-						if bitand(rect.Immune, 1) == 1 then
-							hurtImmune = hurtImmune .. "Stand, "
-						end
-						if bitand(rect.Immune, 2) == 2 then
-							hurtImmune = hurtImmune .. "Crouch, "
-						end
-						if bitand(rect.Immune, 4) == 4 then
-							hurtImmune = hurtImmune .. "Air, "
-						end
-						if bitand(rect.Immune, 64) == 64 then
-							hurtImmune = hurtImmune .. "Behind, "
-						end
-						if bitand(rect.Immune, 128) == 128 then
-							hurtImmune = hurtImmune .. "Reverse, "
-						end
-						-- Display hurtbox properties
-						if display_p1_properties then
-							local fullString = ""
-							if string.len(hurtInvuln) > 0 then
-								-- Remove final commma
-								hurtInvuln = hurtInvuln .. " Invulnerable"
-								fullString = fullString .. hurtInvuln .. "\n"
+					-- TypeFlag > 0 indicates a hurt box
+					if rect.TypeFlag > 0 then
+						if display_p1_hurtboxes then
+							-- Armor (Type: 1) & Parry (Type: 2) Boxes
+							if rect.Type == 2 or rect.Type == 1 then			
+								draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0080)
+								draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x40FF0080)
+							-- All other hurtboxes
+							else
+								draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF00FF00)
+								draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4000FF00)
 							end
-							if string.len(hurtImmune) > 0 then
-								hurtImmune = string.sub(hurtImmune, 0, -3)
-								hurtImmune = hurtImmune .. " Attack Intangible"
-								fullString = fullString .. hurtImmune .. "\n"
+							-- Identify HurtboxType as text (each at a unique height)
+							local hurtInvuln = ""
+							-- TypeFlag:	1	(Projectile Invuln)
+							-- TypeFlag:	2	(Strike Invuln)
+							if rect.TypeFlag == 1 then
+								hurtInvuln = hurtInvuln .. "Projectile"
 							end
-							draw.text(fullString, finalPosX, (finalPosY + finalSclY), 0xFFFFFFFF)
+							if rect.TypeFlag == 2 then
+								hurtInvuln = hurtInvuln .. "Strike"
+							end
+							-- Identify Hurtbox Immunities as text (each at a unique height)
+							local hurtImmune = ""
+							-- Immune:		1	(Stand Attack Intangibility)
+							-- Immune:		2	(Crouch Attack Intangibility)
+							-- Immune:		4	(Air Attack Intangibility)
+							-- Immune:		64	(Cross-Up Attack Intangibility)
+							-- Immune:		128	(Reverse Hit Intangibility)
+							if bitand(rect.Immune, 1) == 1 then
+								hurtImmune = hurtImmune .. "Stand, "
+							end
+							if bitand(rect.Immune, 2) == 2 then
+								hurtImmune = hurtImmune .. "Crouch, "
+							end
+							if bitand(rect.Immune, 4) == 4 then
+								hurtImmune = hurtImmune .. "Air, "
+							end
+							if bitand(rect.Immune, 64) == 64 then
+								hurtImmune = hurtImmune .. "Behind, "
+							end
+							if bitand(rect.Immune, 128) == 128 then
+								hurtImmune = hurtImmune .. "Reverse, "
+							end
+							-- Display hurtbox properties
+							if display_p1_properties then
+								local fullString = ""
+								if string.len(hurtInvuln) > 0 then
+									-- Remove final commma
+									hurtInvuln = hurtInvuln .. " Invulnerable"
+									fullString = fullString .. hurtInvuln .. "\n"
+								end
+								if string.len(hurtImmune) > 0 then
+									hurtImmune = string.sub(hurtImmune, 0, -3)
+									hurtImmune = hurtImmune .. " Attack Intangible"
+									fullString = fullString .. hurtImmune .. "\n"
+								end
+								draw.text(fullString, finalPosX, (finalPosY + finalSclY), 0xFFFFFFFF)
+							end
 						end
+					-- otherwise is a throw hurt box
+					elseif display_p1_throwhurtboxes then
+						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0000)
+						draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4DFF0000)
 					end
 				-- UniqueBoxes have a special field called KeyData
 				elseif rect:get_field("KeyData") ~= nil and display_p1_uniqueboxes then
 					draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFEEFF00)
 					draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4DEEFF00)
-				-- Any remaining rectangles are drawn as a grab box
-				elseif rect:get_field("KeyData") == nil and display_p1_throwhurtboxes then
-					draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0000)
-					draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4DFF0000)
 				end
 			end
 		end
@@ -398,74 +401,77 @@ local draw_p2_boxes = function ( work, actParam )
 						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF00FFFF)
 						draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4000FFFF)
 					end
-				-- If the rectangle has a HitNo field, the box falls under hurt boxes
+				-- If the rectangle has a HitNo field, the box falls under hurt boxes or throw hurt box
 				elseif rect:get_field("HitNo") ~= nil then
-					if display_p2_hurtboxes then
-						-- Armor (Type: 1) & Parry (Type: 2) Boxes
-						if rect.Type == 2 or rect.Type == 1 then			
-							draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0080)
-							draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x40FF0080)
-						-- All other hurtboxes
-						else
-							draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF00FF00)
-							draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4000FF00)
-						end
-						-- Identify HurtboxType as text (each at a unique height)
-						local hurtInvuln = ""
-						-- TypeFlag:	1	(Projectile Invuln)
-						-- TypeFlag:	2	(Strike Invuln)
-						if rect.TypeFlag == 1 then
-							hurtInvuln = hurtInvuln .. "Projectile"
-						end
-						if rect.TypeFlag == 2 then
-							hurtInvuln = hurtInvuln .. "Strike"
-						end
-						-- Identify Hurtbox Immunities as text (each at a unique height)
-						local hurtImmune = ""
-						-- Immune:		1	(Stand Attack Intangibility)
-						-- Immune:		2	(Crouch Attack Intangibility)
-						-- Immune:		4	(Air Attack Intangibility)
-						-- Immune:		64	(Cross-Up Attack Intangibility)
-						-- Immune:		128	(Reverse Hit Intangibility)
-						if bitand(rect.Immune, 1) == 1 then
-							hurtImmune = hurtImmune .. "Stand, "
-						end
-						if bitand(rect.Immune, 2) == 2 then
-							hurtImmune = hurtImmune .. "Crouch, "
-						end
-						if bitand(rect.Immune, 4) == 4 then
-							hurtImmune = hurtImmune .. "Air, "
-						end
-						if bitand(rect.Immune, 64) == 64 then
-							hurtImmune = hurtImmune .. "Behind, "
-						end
-						if bitand(rect.Immune, 128) == 128 then
-							hurtImmune = hurtImmune .. "Reverse, "
-						end
-						-- Display hurtbox properties
-						if display_p2_properties then
-							local fullString = ""
-							if string.len(hurtInvuln) > 0 then
-								-- Remove final commma
-								hurtInvuln = hurtInvuln .. " Invulnerable"
-								fullString = fullString .. hurtInvuln .. "\n"
+					-- TypeFlag > 0 indicates a hurt box
+					if rect.TypeFlag > 0 then
+						if display_p2_hurtboxes then
+							-- Armor (Type: 1) & Parry (Type: 2) Boxes
+							if rect.Type == 2 or rect.Type == 1 then			
+								draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0080)
+								draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x40FF0080)
+							-- All other hurtboxes
+							else
+								draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFF00FF00)
+								draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4000FF00)
 							end
-							if string.len(hurtImmune) > 0 then
-								hurtImmune = string.sub(hurtImmune, 0, -3)
-								hurtImmune = hurtImmune .. " Attack Intangible"
-								fullString = fullString .. hurtImmune .. "\n"
+							-- Identify HurtboxType as text (each at a unique height)
+							local hurtInvuln = ""
+							-- TypeFlag:	1	(Projectile Invuln)
+							-- TypeFlag:	2	(Strike Invuln)
+							if rect.TypeFlag == 1 then
+								hurtInvuln = hurtInvuln .. "Projectile"
 							end
-							draw.text(fullString, finalPosX, (finalPosY + finalSclY), 0xFFFFFFFF)
+							if rect.TypeFlag == 2 then
+								hurtInvuln = hurtInvuln .. "Strike"
+							end
+							-- Identify Hurtbox Immunities as text (each at a unique height)
+							local hurtImmune = ""
+							-- Immune:		1	(Stand Attack Intangibility)
+							-- Immune:		2	(Crouch Attack Intangibility)
+							-- Immune:		4	(Air Attack Intangibility)
+							-- Immune:		64	(Cross-Up Attack Intangibility)
+							-- Immune:		128	(Reverse Hit Intangibility)
+							if bitand(rect.Immune, 1) == 1 then
+								hurtImmune = hurtImmune .. "Stand, "
+							end
+							if bitand(rect.Immune, 2) == 2 then
+								hurtImmune = hurtImmune .. "Crouch, "
+							end
+							if bitand(rect.Immune, 4) == 4 then
+								hurtImmune = hurtImmune .. "Air, "
+							end
+							if bitand(rect.Immune, 64) == 64 then
+								hurtImmune = hurtImmune .. "Behind, "
+							end
+							if bitand(rect.Immune, 128) == 128 then
+								hurtImmune = hurtImmune .. "Reverse, "
+							end
+							-- Display hurtbox properties
+							if display_p2_properties then
+								local fullString = ""
+								if string.len(hurtInvuln) > 0 then
+									-- Remove final commma
+									hurtInvuln = hurtInvuln .. " Invulnerable"
+									fullString = fullString .. hurtInvuln .. "\n"
+								end
+								if string.len(hurtImmune) > 0 then
+									hurtImmune = string.sub(hurtImmune, 0, -3)
+									hurtImmune = hurtImmune .. " Attack Intangible"
+									fullString = fullString .. hurtImmune .. "\n"
+								end
+								draw.text(fullString, finalPosX, (finalPosY + finalSclY), 0xFFFFFFFF)
+							end
 						end
+					-- otherwise is a throw hurt box
+					elseif display_p2_throwhurtboxes then
+						draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0000)
+						draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4DFF0000)
 					end
 				-- UniqueBoxes have a special field called KeyData
 				elseif rect:get_field("KeyData") ~= nil and display_p2_uniqueboxes then
 					draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFEEFF00)
 					draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4DEEFF00)
-				-- Any remaining rectangles are drawn as a grab box
-				elseif rect:get_field("KeyData") == nil and display_p2_throwhurtboxes then
-					draw.outline_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0xFFFF0000)
-					draw.filled_rect(finalPosX, finalPosY, finalSclX, finalSclY, 0x4DFF0000)
 				end
 			end
 		end
